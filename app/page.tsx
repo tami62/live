@@ -1,103 +1,182 @@
-import Image from "next/image";
+"use client";
+
+import { useState, useRef, useEffect } from "react";
+import Webcam from "react-webcam";
+import amplifyConfig from "../amplify_outputs.json";
+import { Amplify } from "aws-amplify";
+import { events } from "aws-amplify/api";
+//import Peer from "simple-peer";
+import DataTable from 'react-data-table-component';
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+  useEffect(() => {
+    Amplify.configure(amplifyConfig, { ssr: true });
+ 
+  }, []);
+
+  const webcamRef = useRef(null);
+  const [playerId, setPlayerId] = useState("");
+  const [isConnected, setIsConnected] = useState<boolean>(true);
+  const [isLiveConnection, setIsLiveConnection] = useState<boolean>(false);
+ //  const dahlingPeer = new Peer({ initiator: true });
+ //  const memiPeer = new Peer({ initiator: true });
+  const columns = [
+    {
+      name: 'Requester',
+      selector: (row: { title: string; }) => row.title,
+    },
+    {
+      name: 'Year',
+      selector: (row: { time: string; }) => row.time,
+    },
+    {
+      name: 'content',
+      selector: (row: { content: string; }) => row.content,
+    },
+  ];
+  
+  const data = [
+      {
+      id: 1,
+      title: 'Requestor',
+      year: '1988',
+    },
+    {
+      id: 2,
+      title: 'Ghostbusters',
+      year: '1984',
+    },
+  ]
+
+  const startRecording = async (type: string) => {
+
+    try {
+      const constraints =
+        type === "video" ? { video: true, audio: true } : { audio: true };
+      const userStream = await navigator.mediaDevices.getUserMedia(constraints);
+      //   setStream(userStream);
+
+      if (type === "video" && webcamRef.current) {
+        webcamRef.current.video.srcObject = userStream;
+      }
+
+      const recorder = new MediaRecorder(userStream);
+      const chunks: BlobPart[] = [];
+      recorder.ondataavailable = (event) => chunks.push(event.data);
+      recorder.onstop = () => {
+        // const blob = new Blob(chunks, {
+        //   type: type === "video" ? "video/mp4" : "audio/wav",
+        // });
+
+        userStream.getTracks().forEach((track) => track.stop());
+      };
+      recorder.start();
+    } catch (error) {
+      console.error("Error accessing media devices:", error);
+    }
+  };
+
+  const connectClient = async () => {
+    setPlayerId("PMXM40G8");
+    try {
+      const subscribeToGameState = async (roomId: string) => {
+        const channel = await events.connect(`/game/${roomId}`, {
+          authMode: "iam",
+        });
+
+         setIsConnected(true);
+         startRecording("video");
+        const sub = channel.subscribe({
+          next: async (data) => {
+            console.log(data.event.type);
+            if (data?.event?.type === "LIVE_START") {
+              console.log("IsLiveConnection set to True");
+              setIsLiveConnection(true);
+            }
+           
+         },
+          error: async (err) => {
+            console.log("Connection error", err);
+            console.log("Failed to connect to the game");
+          },
+        });
+        return sub;
+      };
+
+      const subPromise = await subscribeToGameState(playerId);
+      console.log(subPromise);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const sendEvent = async () => {
+    console.log("send event");
+    events.post(
+          `/game/${playerId}`,
+          {
+            type: "POPLAR_READY",
+            payload: {"message":"connected"},
+          },
+          { authMode: "iam" }
+        );
+  }
+
+  const sendPeerSignal = async () => {
+    console.log("send peer signal");
+    console.log(isLiveConnection);
+  //   events.post(
+  //     `/game/${playerId}`,
+  //     {
+  //       type: "POPLAR_READY",
+  //       payload: initSignal,
+  //     },
+  //     { authMode: "iam" }
+  //   );
+  //   dahlingPeer.signal(data);
+  //   memiPeer.signal(data);
+  // });
+  }
+
+  return (
+    <div>
+    <Webcam
+                ref={webcamRef}
+                className="w-full max-w-lg border border-gray-600 rounded-lg"
+              />
+    <button
+    onClick={() =>    connectClient()}
+    disabled={!isConnected}
+    className={`bg-indigo-400 p-3 rounded-lg flex justify-center md:justify-start items-center gap-2 hover:bg-blue-300 ${
+      isConnected ? "" : "opacity-50 cursor-not-allowed"
+    }`}
+  >
+    Stream
+  </button>
+  <button
+    onClick={() =>    sendEvent()}
+    disabled={!isConnected}
+    className={`bg-indigo-500 p-3 rounded-lg flex justify-center md:justify-start items-center gap-2 hover:bg-blue-400 ${
+      isConnected ? "" : "opacity-50 cursor-not-allowed"
+    }`}
+  >
+    Event
+  </button>
+
+  <button
+    onClick={() =>    sendPeerSignal()}
+    disabled={!isConnected}
+    className={`bg-indigo-600 p-3 rounded-lg flex justify-center md:justify-start items-center gap-2 hover:bg-blue-500 ${
+      isConnected ? "" : "opacity-50 cursor-not-allowed"
+    }`}
+  >
+    Signal
+  </button>
+  <DataTable
+			columns={columns}
+			data={data}
+		/>
+  </div>
+     );
 }
