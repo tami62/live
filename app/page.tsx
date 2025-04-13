@@ -40,12 +40,14 @@ export default function Home() {
       {
       id: 1,
       title: 'Requestor',
-      year: '1988',
+      time: '12/12/2025 5:00PM',
+      content: 'This new song'
     },
     {
       id: 2,
       title: 'Ghostbusters',
-      year: '1984',
+      time: '12/12/2025 7:00PM',
+      content: 'that new song'
     },
   ]
 
