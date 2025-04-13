@@ -58,7 +58,7 @@ export default function Home() {
       //   setStream(userStream);
 
       if (type === "video" && webcamRef.current) {
-        webcamRef.current.video.srcObject = userStream;
+       // webcamRef.current.video.srcObject = userStream;
       }
 
       const recorder = new MediaRecorder(userStream);
