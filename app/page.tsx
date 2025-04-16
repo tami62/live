@@ -16,12 +16,12 @@ export default function Home() {
  
   }, []);
 
-  const dahlingWebCamRef = useRef(null);
+  const dahlingWebCamRef = useRef<HTMLVideoElement>(null);
   const [isConnected, setIsConnected] = useState<boolean>(true);
   const [isLiveConnection, setIsLiveConnection] = useState<boolean>(false);
   const [audioInConnection, setAudioInConnection] = useState<boolean>(false);
 
-  const memiAudioRef = useRef(null);
+  const memiAudioRef = useRef<HTMLAudioElement>(null);
 
 
   const columns = [
@@ -159,11 +159,7 @@ export default function Home() {
     Signal
   </button>
 
-  <audio
-    ref={memiAudioRef}
-    controls
-    className="mt-2"
-  />
+  <audio   ref={memiAudioRef} src="null" controls className="mt-2"  />
   
   <DataTable
 			columns={columns}
