@@ -5,8 +5,9 @@ import Webcam from "react-webcam";
 import amplifyConfig from "../amplify_outputs.json";
 import { Amplify } from "aws-amplify";
 import { events } from "aws-amplify/api";
-//import Peer from "simple-peer";
+import Peer from "simple-peer";
 import DataTable from 'react-data-table-component';
+
 
 export default function Home() {
 
@@ -15,12 +16,14 @@ export default function Home() {
  
   }, []);
 
-  const webcamRef = useRef(null);
-  const [playerId, setPlayerId] = useState("");
+  const dahlingWebCamRef = useRef(null);
   const [isConnected, setIsConnected] = useState<boolean>(true);
   const [isLiveConnection, setIsLiveConnection] = useState<boolean>(false);
- //  const dahlingPeer = new Peer({ initiator: true });
- //  const memiPeer = new Peer({ initiator: true });
+  const [audioInConnection, setAudioInConnection] = useState<boolean>(false);
+
+  const memiAudioRef = useRef(null);
+
+
   const columns = [
     {
       name: 'Requester',
@@ -51,44 +54,48 @@ export default function Home() {
     },
   ]
 
-  const startRecording = async (type: string) => {
+  const startLiveCam = async (screenCode: string) => {
 
     try {
-      const constraints =
-        type === "video" ? { video: true, audio: true } : { audio: true };
-      const userStream = await navigator.mediaDevices.getUserMedia(constraints);
-      //   setStream(userStream);
+        const constraints = { video: true, audio: true };
+        const userStream = await navigator.mediaDevices.getUserMedia(constraints);
+        const dahlingPeer = new Peer({ initiator: true, stream:userStream });
 
-      if (type === "video" && webcamRef.current) {
-       // webcamRef.current.video.srcObject = userStream;
-      }
+        dahlingPeer.on("signal",(data) => {
+          
+          const initSignal = JSON.stringify(data);
+          console.log("Signal", initSignal)
+          sendSignal(screenCode,"LIVE_READY_SIGNAL",initSignal);
+          setIsLiveConnection(true);
+          console.log(isLiveConnection);
+        }
+      )
+        dahlingPeer.on("Stream",(remoteStream) => {
+          setAudioInConnection(true);
+          console.log("is audio connection",audioInConnection);
+          if (memiAudioRef.current) {
+              memiAudioRef.current.srcObject = remoteStream;
+          }
+        }
+      )
 
-      const recorder = new MediaRecorder(userStream);
-      const chunks: BlobPart[] = [];
-      recorder.ondataavailable = (event) => chunks.push(event.data);
-      recorder.onstop = () => {
-        // const blob = new Blob(chunks, {
-        //   type: type === "video" ? "video/mp4" : "audio/wav",
-        // });
-
-        userStream.getTracks().forEach((track) => track.stop());
-      };
-      recorder.start();
+        
     } catch (error) {
       console.error("Error accessing media devices:", error);
     }
   };
 
-  const connectClient = async () => {
-    setPlayerId("PMXM40G8");
+  const waitForPeerSignal = async (screenCode:string) => {
+ 
     try {
-      const subscribeToGameState = async (roomId: string) => {
-        const channel = await events.connect(`/game/${roomId}`, {
+      const subscribeToPartyRoom= async (screenCode: string) => {
+        const channel = await events.connect(`/game/${screenCode}`, {
           authMode: "iam",
         });
 
          setIsConnected(true);
-         startRecording("video");
+         startLiveCam("video");
+        
         const sub = channel.subscribe({
           next: async (data) => {
             console.log(data.event.type);
@@ -106,49 +113,35 @@ export default function Home() {
         return sub;
       };
 
-      const subPromise = await subscribeToGameState(playerId);
+      const subPromise = await subscribeToPartyRoom(screenCode);
       console.log(subPromise);
     } catch (err) {
       console.log(err);
     }
   };
 
-  const sendEvent = async () => {
+  const sendSignal = async (screenCode:string,eventType:string, message:string) => {
     console.log("send event");
     events.post(
-          `/game/${playerId}`,
+          `/game/${screenCode}`,
           {
-            type: "POPLAR_READY",
-            payload: {"message":"connected"},
+            type: eventType,
+            payload: {"message":message},
           },
           { authMode: "iam" }
-        );
+    );
   }
 
-  const sendPeerSignal = async () => {
-    console.log("send peer signal");
-    console.log(isLiveConnection);
-  //   events.post(
-  //     `/game/${playerId}`,
-  //     {
-  //       type: "POPLAR_READY",
-  //       payload: initSignal,
-  //     },
-  //     { authMode: "iam" }
-  //   );
-  //   dahlingPeer.signal(data);
-  //   memiPeer.signal(data);
-  // });
-  }
+  
 
   return (
     <div>
     <Webcam
-                ref={webcamRef}
+                ref={dahlingWebCamRef}
                 className="w-full max-w-lg border border-gray-600 rounded-lg"
               />
     <button
-    onClick={() =>    connectClient()}
+    onClick={() =>    waitForPeerSignal("N1ZOVR68")}
     disabled={!isConnected}
     className={`bg-indigo-400 p-3 rounded-lg flex justify-center md:justify-start items-center gap-2 hover:bg-blue-300 ${
       isConnected ? "" : "opacity-50 cursor-not-allowed"
@@ -157,24 +150,21 @@ export default function Home() {
     Stream
   </button>
   <button
-    onClick={() =>    sendEvent()}
+    onClick={() =>    startLiveCam("N1ZOVR68")}
     disabled={!isConnected}
     className={`bg-indigo-500 p-3 rounded-lg flex justify-center md:justify-start items-center gap-2 hover:bg-blue-400 ${
       isConnected ? "" : "opacity-50 cursor-not-allowed"
     }`}
   >
-    Event
-  </button>
-
-  <button
-    onClick={() =>    sendPeerSignal()}
-    disabled={!isConnected}
-    className={`bg-indigo-600 p-3 rounded-lg flex justify-center md:justify-start items-center gap-2 hover:bg-blue-500 ${
-      isConnected ? "" : "opacity-50 cursor-not-allowed"
-    }`}
-  >
     Signal
   </button>
+
+  <audio
+    ref={memiAudioRef}
+    controls
+    className="mt-2"
+  />
+  
   <DataTable
 			columns={columns}
 			data={data}
