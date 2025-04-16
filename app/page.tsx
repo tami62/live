@@ -16,7 +16,7 @@ export default function Home() {
  
   }, []);
 
-  const dahlingWebCamRef = useRef<HTMLVideoElement>(null);
+  const dahlingWebCamRef = useRef<Webcam>(null);
   const [isConnected, setIsConnected] = useState<boolean>(true);
   const [isLiveConnection, setIsLiveConnection] = useState<boolean>(false);
   const [audioInConnection, setAudioInConnection] = useState<boolean>(false);
