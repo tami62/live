@@ -22,8 +22,7 @@ export default function Home() {
   const [audioInConnection, setAudioInConnection] = useState<boolean>(false);
 
   const memiAudioRef = useRef<HTMLAudioElement>(null);
-
-
+ 
   const columns = [
     {
       name: 'Requester',
@@ -59,8 +58,9 @@ export default function Home() {
     try {
         const constraints = { video: true, audio: true };
         const userStream = await navigator.mediaDevices.getUserMedia(constraints);
-        const dahlingPeer = new Peer({ initiator: true, stream:userStream });
-
+        const dahlingPeer = new Peer({ initiator: true, stream:userStream }); // Both audio and video out to Dahling
+        const memiPeer = new Peer({ initiator: true}); // no audior out video out on Memi for now, used for audio in only.
+      
         dahlingPeer.on("signal",(data) => {
           
           const initSignal = JSON.stringify(data);
@@ -70,7 +70,7 @@ export default function Home() {
           console.log(isLiveConnection);
         }
       )
-        dahlingPeer.on("Stream",(remoteStream) => {
+      memiPeer.on("Stream",(remoteStream) => {
           setAudioInConnection(true);
           console.log("is audio connection",audioInConnection);
           if (memiAudioRef.current) {
@@ -99,8 +99,15 @@ export default function Home() {
         const sub = channel.subscribe({
           next: async (data) => {
             console.log(data.event.type);
-            if (data?.event?.type === "LIVE_START") {
+            if (data?.event?.type === "LIVE_START_DAHLING") {
               console.log("IsLiveConnection set to True");
+            //  dahlingPeer.signal(data?.event?.payload?.message);
+              setIsLiveConnection(true);
+            }
+
+            if (data?.event?.type === "LIVE_START_MEMI") {
+              console.log("IsLiveConnection set to True");
+            //  memiPeer.signal(data?.event?.payload?.message);
               setIsLiveConnection(true);
             }
            
