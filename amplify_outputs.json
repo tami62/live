@@ -1,9 +1,9 @@
 {
   "auth": {
-    "user_pool_id": "us-east-1_gNCeGnNMN",
+    "user_pool_id": "us-east-1_w7EPkx5Al",
     "aws_region": "us-east-1",
-    "user_pool_client_id": "1uv4f78d7fi09hhfipmshlt2gf",
-    "identity_pool_id": "us-east-1:e1b75de5-fc0c-4566-b01c-ce4bd2ca996d",
+    "user_pool_client_id": "5gnovd4ariuujms3b00lso8dqe",
+    "identity_pool_id": "us-east-1:345335c6-640c-4be9-a78a-f38e49ed7a5e",
     "mfa_methods": [],
     "standard_required_attributes": [
       "email"
@@ -13,6 +13,13 @@
     ],
     "user_verification_types": [
       "email"
+    ],
+    "groups": [
+      {
+        "ADMIN": {
+          "precedence": 0
+        }
+      }
     ],
     "mfa_configuration": "NONE",
     "password_policy": {
@@ -25,7 +32,7 @@
     "unauthenticated_identities_enabled": true
   },
   "data": {
-    "url": "https://cgf6kz6ytfdvdmyxrwpqqwv7vq.appsync-api.us-east-1.amazonaws.com/graphql",
+    "url": "https://34nmhpfhynew7ez6tcl6pxvoly.appsync-api.us-east-1.amazonaws.com/graphql",
     "aws_region": "us-east-1",
     "default_authorization_type": "AMAZON_COGNITO_USER_POOLS",
     "authorization_types": [
@@ -792,109 +799,6 @@
             "sortKeyFieldNames": []
           }
         },
-        "Event": {
-          "name": "Event",
-          "fields": {
-            "id": {
-              "name": "id",
-              "isArray": false,
-              "type": "ID",
-              "isRequired": true,
-              "attributes": []
-            },
-            "dateTime": {
-              "name": "dateTime",
-              "isArray": false,
-              "type": "String",
-              "isRequired": true,
-              "attributes": []
-            },
-            "requesterName": {
-              "name": "requesterName",
-              "isArray": false,
-              "type": "String",
-              "isRequired": true,
-              "attributes": []
-            },
-            "contentType": {
-              "name": "contentType",
-              "isArray": false,
-              "type": "String",
-              "isRequired": true,
-              "attributes": []
-            },
-            "movieFileName": {
-              "name": "movieFileName",
-              "isArray": false,
-              "type": "String",
-              "isRequired": true,
-              "attributes": []
-            },
-            "createdAt": {
-              "name": "createdAt",
-              "isArray": false,
-              "type": "AWSDateTime",
-              "isRequired": false,
-              "attributes": [],
-              "isReadOnly": true
-            },
-            "updatedAt": {
-              "name": "updatedAt",
-              "isArray": false,
-              "type": "AWSDateTime",
-              "isRequired": false,
-              "attributes": [],
-              "isReadOnly": true
-            }
-          },
-          "syncable": true,
-          "pluralName": "Events",
-          "attributes": [
-            {
-              "type": "model",
-              "properties": {}
-            },
-            {
-              "type": "auth",
-              "properties": {
-                "rules": [
-                  {
-                    "allow": "public",
-                    "provider": "iam",
-                    "operations": [
-                      "read"
-                    ]
-                  },
-                  {
-                    "allow": "private",
-                    "operations": [
-                      "read",
-                      "create"
-                    ]
-                  },
-                  {
-                    "groupClaim": "cognito:groups",
-                    "provider": "userPools",
-                    "allow": "groups",
-                    "operations": [
-                      "read",
-                      "update",
-                      "delete"
-                    ],
-                    "groups": [
-                      "ADMIN"
-                    ]
-                  }
-                ]
-              }
-            }
-          ],
-          "primaryKeyInfo": {
-            "isCustomPrimaryKey": false,
-            "primaryKeyFieldName": "id",
-            "sortKeyFieldNames": []
-          }
-        },
         "Trivia": {
           "name": "Trivia",
           "fields": {
@@ -1093,20 +997,113 @@
   },
   "storage": {
     "aws_region": "us-east-1",
-    "bucket_name": "amplify-d1l8nhycdgeak6-de-partyhomediasbucket2ee19-skqt1q8hpxiw",
+    "bucket_name": "amplify-d10k6xjfs4pyz1-ma-partyhomediasbucket2ee19-1xrsonkttxey",
     "buckets": [
       {
         "name": "partyho-medias",
-        "bucket_name": "amplify-d1l8nhycdgeak6-de-partyhomediasbucket2ee19-skqt1q8hpxiw",
-        "aws_region": "us-east-1"
+        "bucket_name": "amplify-d10k6xjfs4pyz1-ma-partyhomediasbucket2ee19-1xrsonkttxey",
+        "aws_region": "us-east-1",
+        "paths": {
+          "public/*": {
+            "guest": [
+              "get",
+              "list",
+              "write"
+            ],
+            "authenticated": [
+              "get",
+              "list",
+              "write",
+              "delete"
+            ],
+            "groupsADMIN": [
+              "get",
+              "list",
+              "write",
+              "delete"
+            ]
+          },
+          "protected/*": {
+            "authenticated": [
+              "get",
+              "list"
+            ],
+            "groupsADMIN": [
+              "get",
+              "list",
+              "write",
+              "delete"
+            ]
+          },
+          "protected/${cognito-identity.amazonaws.com:sub}/*": {
+            "entityidentity": [
+              "get",
+              "list",
+              "write",
+              "delete"
+            ]
+          },
+          "private/*": {
+            "authenticated": [
+              "get",
+              "list"
+            ],
+            "groupsADMIN": [
+              "get",
+              "list",
+              "write",
+              "delete"
+            ]
+          },
+          "private/${cognito-identity.amazonaws.com:sub}/*": {
+            "entityidentity": [
+              "get",
+              "list",
+              "write",
+              "delete"
+            ]
+          },
+          "private/movie/${cognito-identity.amazonaws.com:sub}/*": {
+            "entityidentity": [
+              "get",
+              "list",
+              "write",
+              "delete"
+            ]
+          },
+          "private/movie/*": {
+            "groupsADMIN": [
+              "get",
+              "list",
+              "write",
+              "delete"
+            ]
+          },
+          "private/trivia/${cognito-identity.amazonaws.com:sub}/*": {
+            "entityidentity": [
+              "get",
+              "list",
+              "write",
+              "delete"
+            ]
+          },
+          "private/trivia/*": {
+            "groupsADMIN": [
+              "get",
+              "list",
+              "write",
+              "delete"
+            ]
+          }
+        }
       }
     ]
   },
   "version": "1.3",
   "custom": {
-    "stripeWebhookHandler": "https://igpca7cwxnl6mgpmcbo72jp3se0rkqjd.lambda-url.us-east-1.on.aws/",
+    "stripeWebhookHandler": "https://g3dkc7iutfm2rawdcaviid3ufi0xpvxq.lambda-url.us-east-1.on.aws/",
     "events": {
-      "url": "https://5n3whzs2t5cuholyrmmea3omyq.appsync-api.us-east-1.amazonaws.com/event",
+      "url": "https://spnuhrrbdbdqpdjz5bjikck5ku.appsync-api.us-east-1.amazonaws.com/event",
       "aws_region": "us-east-1",
       "default_authorization_type": "AWS_IAM"
     }

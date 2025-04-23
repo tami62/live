@@ -20,7 +20,7 @@ export default function Home() {
   const [isConnected, setIsConnected] = useState<boolean>(true);
   const [isLiveConnection, setIsLiveConnection] = useState<boolean>(false);
   const [audioInConnection, setAudioInConnection] = useState<boolean>(false);
-
+  const screenCode="4AZMYYOX";
   const memiAudioRef = useRef<HTMLAudioElement>(null);
  
   const columns = [
@@ -53,38 +53,38 @@ export default function Home() {
     },
   ]
 
-  const startLiveCam = async (screenCode: string) => {
-
+  const onCamera = (stream) => {
+    console.log('Stream started:', stream);
     try {
-        const constraints = { video: true, audio: true };
-        const userStream = await navigator.mediaDevices.getUserMedia(constraints);
-        const dahlingPeer = new Peer({ initiator: true, stream:userStream }); // Both audio and video out to Dahling
-        const memiPeer = new Peer({ initiator: true}); // no audior out video out on Memi for now, used for audio in only.
-      
-        dahlingPeer.on("signal",(data) => {
-          
-          const initSignal = JSON.stringify(data);
-          console.log("Signal", initSignal)
-          sendSignal(screenCode,"LIVE_READY_SIGNAL",initSignal);
-          setIsLiveConnection(true);
-          console.log(isLiveConnection);
-        }
-      )
-      memiPeer.on("Stream",(remoteStream) => {
-          setAudioInConnection(true);
-          console.log("is audio connection",audioInConnection);
-          if (memiAudioRef.current) {
-              memiAudioRef.current.srcObject = remoteStream;
-          }
-        }
-      )
 
+      const dahlingPeer = new Peer({ initiator: true, stream:stream }); // Both audio and video out to Dahling
+      const memiPeer = new Peer({ initiator: true}); // no audior out video out on Memi for now, used for audio in only.
+    
+      dahlingPeer.on("signal",(data) => {
         
-    } catch (error) {
-      console.error("Error accessing media devices:", error);
-    }
+        const initSignal = JSON.stringify(data);
+        console.log("Signal", initSignal)
+        sendSignal(screenCode,"LIVE_READY_SIGNAL",initSignal);
+        setIsLiveConnection(true);
+        console.log(isLiveConnection);
+      }
+    )
+    memiPeer.on("Stream",(remoteStream) => {
+        setAudioInConnection(true);
+        console.log("is audio connection",audioInConnection);
+        if (memiAudioRef.current) {
+            memiAudioRef.current.srcObject = remoteStream;
+        }
+      }
+    )
+    waitForPeerSignal(screenCode);
+      
+  } catch (error) {
+    console.error("Error accessing media devices:", error);
+  }
   };
 
+  
   const waitForPeerSignal = async (screenCode:string) => {
  
     try {
@@ -94,7 +94,6 @@ export default function Home() {
         });
 
          setIsConnected(true);
-         startLiveCam("video");
         
         const sub = channel.subscribe({
           next: async (data) => {
@@ -143,28 +142,14 @@ export default function Home() {
 
   return (
     <div>
-    <Webcam
-                ref={dahlingWebCamRef}
-                className="w-full max-w-lg border border-gray-600 rounded-lg"
-              />
-    <button
-    onClick={() =>    waitForPeerSignal("N1ZOVR68")}
-    disabled={!isConnected}
-    className={`bg-indigo-400 p-3 rounded-lg flex justify-center md:justify-start items-center gap-2 hover:bg-blue-300 ${
-      isConnected ? "" : "opacity-50 cursor-not-allowed"
-    }`}
-  >
-    Stream
-  </button>
-  <button
-    onClick={() =>    startLiveCam("N1ZOVR68")}
-    disabled={!isConnected}
-    className={`bg-indigo-500 p-3 rounded-lg flex justify-center md:justify-start items-center gap-2 hover:bg-blue-400 ${
-      isConnected ? "" : "opacity-50 cursor-not-allowed"
-    }`}
-  >
-    Signal
-  </button>
+      <Webcam
+        ref={dahlingWebCamRef}
+        className="w-full max-w-lg border border-gray-600 rounded-lg"
+        onUserMedia={onCamera}
+      />
+   
+ <span>Connected:{isConnected}</span>
+ <span>Live Connection:{isLiveConnection}</span>
 
   <audio   ref={memiAudioRef} src="null" controls className="mt-2"  />
   
