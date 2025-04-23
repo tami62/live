@@ -53,7 +53,7 @@ export default function Home() {
     },
   ]
 
-  const onCamera = (stream) => {
+  const onCamera = (stream:MediaStream ) => {
     console.log('Stream started:', stream);
     try {
 
