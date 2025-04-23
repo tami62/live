@@ -111,13 +111,13 @@ export default function Home() {
             console.log(data.event.type);
             if (data?.event?.type === "LIVE_READY_DAHLING") {
               console.log("Live peer ready signal received",data?.event?.type);
-            //  dahlingPeer.signal(data?.event?.payload?.message);
+              dahlingPeer.signal(data?.event?.payload?.message);
               setIsLiveConnection(true);
             }
 
             if (data?.event?.type === "LIVE_READY_MEMI") {
               console.log("Audio Peer ready signal received",data?.event?.type);
-            //  memiPeer.signal(data?.event?.payload?.message);
+              memiPeer.signal(data?.event?.payload?.message);
             setIsAudioPeerConnection(true);
             }
            
