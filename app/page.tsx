@@ -5,7 +5,7 @@ import Webcam from "react-webcam";
 import amplifyConfig from "../amplify_outputs.json";
 import { Amplify } from "aws-amplify";
 import { events } from "aws-amplify/api";
-import Peer from "simple-peer";
+import Peer, { Instance } from 'simple-peer';
 import DataTable from 'react-data-table-component';
 import { useSearchParams } from "next/navigation";
 
@@ -18,10 +18,10 @@ export default function Home() {
   const [isConnected, setIsConnected] = useState<boolean>(true);
   const [isLiveConnection, setIsLiveConnection] = useState<boolean>(false);
   const [isAudioPeerConnection, setIsAudioPeerConnection] = useState<boolean>(false);
-  const [screen,setScreen] = useState<string>();
+  const [screen,setScreen] = useState<string>("");
   const [connectedScreen,setConnectedScreen] = useState<string>("");
-  const [dahlingPeer,setDahlingPeer] = useState({});
-  const [memiPeer, setMemiPeer] = useState({});
+  const [dahlingPeer,setDahlingPeer] = useState<Instance|null>(null);
+  const [memiPeer, setMemiPeer] = useState<Instance|null>(null);
   const memiAudioRef = useRef<HTMLAudioElement>(null);
   const searchParams = useSearchParams();
 
@@ -67,13 +67,13 @@ export default function Home() {
     console.log('Stream started:', stream);
     if (screen!=connectedScreen) {
       try {
-        dahlingPeer.destroy();
-        memiPeer.destroy();
+        dahlingPeer?.destroy();
+        memiPeer?.destroy();
         setConnectedScreen(screen);
         setDahlingPeer(new Peer({ initiator: true, stream:stream })); // Both audio and video out to Dahling
         setMemiPeer(new Peer({ initiator: true})); // no audior out video out on Memi for now, used for audio in only.
     
-        dahlingPeer.on("signal",(data) => {
+        dahlingPeer?.on("signal",(data) => {
           
           const initSignal = JSON.stringify(data);
           console.log("Signal", initSignal)
@@ -82,7 +82,7 @@ export default function Home() {
           console.log(isLiveConnection);
         }
       )
-      memiPeer.on("Stream",(remoteStream) => {
+      memiPeer?.on("Stream",(remoteStream) => {
         setIsAudioPeerConnection(true);
           console.log("is audio connection",isAudioPeerConnection);
           if (memiAudioRef.current) {
