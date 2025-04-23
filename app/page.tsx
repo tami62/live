@@ -10,6 +10,7 @@ import DataTable from 'react-data-table-component';
 import { useSearchParams } from "next/navigation";
 
 
+
 export default function Home() {
 
  
@@ -19,8 +20,8 @@ export default function Home() {
   const [isAudioPeerConnection, setIsAudioPeerConnection] = useState<boolean>(false);
   const [screen,setScreen] = useState<string>();
   const [connectedScreen,setConnectedScreen] = useState<string>("");
-  const [dahlingPeer,setDahlingPeer] = useState<Peer>(null);
-  const [memiPeer, setMemiPeer] = useState<Peer>(null);
+  const [dahlingPeer,setDahlingPeer] = useState({});
+  const [memiPeer, setMemiPeer] = useState({});
   const memiAudioRef = useRef<HTMLAudioElement>(null);
   const searchParams = useSearchParams();
 
