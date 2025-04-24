@@ -74,8 +74,8 @@ export default function Home() {
    
         setConnectedScreen(screen);
         console.log('establishing peer connections:' );
-        const dahlingPeer = new Peer({ initiator: true, stream:stream }); // Both audio and video out to Dahling
-        const memiPeer = new Peer({ initiator: true}); // no audior out video out on Memi for now, used for audio in only.
+        const dahlingPeer = new Peer({ initiator: true, stream:stream,trickle: false  }); // Both audio and video out to Dahling
+        const memiPeer = new Peer({ initiator: true,trickle: false }); // no audior out video out on Memi for now, used for audio in only.
     
         dahlingPeer?.on("signal",(data) => {
           
@@ -83,7 +83,6 @@ export default function Home() {
           console.log("Signal", initSignal)
           sendSignal(screen,"LIVE_READY_POPLAR",initSignal);
           setIsLiveConnection(true);
-          console.log(isLiveConnection);
         })
         dahlingPeer.on('error', (err) => {
           console.error('Peer error', err);
@@ -147,7 +146,6 @@ export default function Home() {
 
  
   const sendSignal = async (screenCode:string,eventType:string, message:string) => {
-    console.log("send event");
     events.post(
           `/game/${screenCode}`,
           {
