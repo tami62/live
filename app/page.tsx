@@ -94,17 +94,6 @@ export default function Home() {
           }
         }
       )
-     // sendSignal(screen,"LIVE_READY_POPLAR",pop);
-      waitForPeerSignal();
-      } catch (error) {
-        console.error("Error accessing media devices:", error);
-      }
-    }
-  };
-
-  const waitForPeerSignal = async () => {
- 
-    try {
       const subscribeToPartyRoom= async () => {
         const channel = await events.connect(`/game/${screen}`, {
           authMode: "iam",
@@ -136,13 +125,15 @@ export default function Home() {
         return sub;
       };
 
-      const subPromise = await subscribeToPartyRoom();
+      const subPromise = subscribeToPartyRoom();
       console.log(subPromise);
-    } catch (err) {
-      console.log(err);
+      } catch (error) {
+        console.error("Error accessing media devices:", error);
+      }
     }
   };
 
+ 
   const sendSignal = async (screenCode:string,eventType:string, message:string) => {
     console.log("send event");
     events.post(
