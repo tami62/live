@@ -65,11 +65,15 @@ export default function Home() {
 
   const onCamera = (stream:MediaStream ) => {
     console.log('Stream started:', stream);
+    console.log('screen code:',screen );
+    console.log('connectedScreen',connectedScreen );
+
     if (screen!=connectedScreen) {
       try {
         dahlingPeer?.destroy();
         memiPeer?.destroy();
         setConnectedScreen(screen);
+        console.log('establishing peer connections:' );
         setDahlingPeer(new Peer({ initiator: true, stream:stream })); // Both audio and video out to Dahling
         setMemiPeer(new Peer({ initiator: true})); // no audior out video out on Memi for now, used for audio in only.
     
