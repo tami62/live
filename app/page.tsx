@@ -20,8 +20,8 @@ export default function Home() {
   const [isAudioPeerConnection, setIsAudioPeerConnection] = useState<boolean>(false);
   const [screen,setScreen] = useState<string>("");
   const [connectedScreen,setConnectedScreen] = useState<string>("");
-  const [dahlingPeer,setDahlingPeer] = useState<Instance|null>(null);
-  const [memiPeer, setMemiPeer] = useState<Instance|null>(null);
+  // const [dahlingPeer,setDahlingPeer] = useState<Instance|null>(null);
+  // const [memiPeer, setMemiPeer] = useState<Instance|null>(null);
   const memiAudioRef = useRef<HTMLAudioElement>(null);
   const searchParams = useSearchParams();
 
@@ -66,16 +66,15 @@ export default function Home() {
   const onCamera = (stream:MediaStream ) => {
     console.log('Stream started:', stream);
     console.log('screen code:',screen );
-    console.log('connectedScreen',connectedScreen );
+    console.log('connected Screen',connectedScreen );
 
     if (screen!=connectedScreen) {
       try {
-        dahlingPeer?.destroy();
-        memiPeer?.destroy();
+   
         setConnectedScreen(screen);
         console.log('establishing peer connections:' );
-        setDahlingPeer(new Peer({ initiator: true, stream:stream })); // Both audio and video out to Dahling
-        setMemiPeer(new Peer({ initiator: true})); // no audior out video out on Memi for now, used for audio in only.
+        const dahlingPeer = new Peer({ initiator: true, stream:stream }); // Both audio and video out to Dahling
+        const memiPeer = new Peer({ initiator: true}); // no audior out video out on Memi for now, used for audio in only.
     
         dahlingPeer?.on("signal",(data) => {
           
@@ -94,6 +93,7 @@ export default function Home() {
           }
         }
       )
+      sendSignal(screen,"LIVE_READY_POPLAR",pop);
       waitForPeerSignal();
       } catch (error) {
         console.error("Error accessing media devices:", error);
