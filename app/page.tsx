@@ -89,13 +89,9 @@ export default function Home() {
         });
     
         dahlingPeer.on('connect', () => {
-          console.log('CONNECT')
-          dahlingPeer.send("Hello from Poppeer");
-        })
+          console.log('CONNECTED')
+         })
     
-        dahlingPeer.on('data', data => {
-          console.log('data: ' + data)
-        })
         memiPeer?.on("Stream",(remoteStream) => {
           setIsAudioPeerConnection(true);
           console.log("is audio connection",isAudioPeerConnection);
