@@ -5,7 +5,8 @@ import Webcam from "react-webcam";
 import amplifyConfig from "../amplify_outputs.json";
 import { Amplify } from "aws-amplify";
 import { events } from "aws-amplify/api";
-import Peer, { Instance } from 'simple-peer';
+//import Peer, { Instance } from 'simple-peer';
+import Peer from 'simple-peer';
 import DataTable from 'react-data-table-component';
 import { useSearchParams } from "next/navigation";
 
