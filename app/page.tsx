@@ -84,52 +84,57 @@ export default function Home() {
           sendSignal(screen,"LIVE_READY_POPLAR",initSignal);
           setIsLiveConnection(true);
           console.log(isLiveConnection);
-        }
-      )
-      memiPeer?.on("Stream",(remoteStream) => {
-        setIsAudioPeerConnection(true);
+        })
+        dahlingPeer.on('error', (err) => {
+          console.error('Peer error', err);
+        });
+    
+        
+        memiPeer?.on("Stream",(remoteStream) => {
+          setIsAudioPeerConnection(true);
           console.log("is audio connection",isAudioPeerConnection);
           if (memiAudioRef.current) {
               memiAudioRef.current.srcObject = remoteStream;
           }
-        }
-      )
-      const subscribeToPartyRoom= async () => {
-        const channel = await events.connect(`/game/${screen}`, {
-          authMode: "iam",
-        });
-
-         setIsConnected(true);
-        
-        const sub = channel.subscribe({
-          next: async (data) => {
-            console.log(data.event.type);
-            if (data?.event?.type === "LIVE_READY_DAHLING") {
-              console.log("Live peer ready signal received",data?.event?.type);
-              dahlingPeer?.signal(data?.event?.payload?.message);
-              setIsLiveConnection(true);
-            }
-
-            if (data?.event?.type === "LIVE_READY_MEMI") {
-              console.log("Audio Peer ready signal received",data?.event?.type);
-              memiPeer?.signal(data?.event?.payload?.message);
-            setIsAudioPeerConnection(true);
-            }
-           
-         },
-          error: async (err) => {
-            console.log("Connection error", err);
-            console.log("Failed to connect to the game");
-          },
-        });
-        return sub;
-      };
-
-      const subPromise = subscribeToPartyRoom();
-      console.log(subPromise);
+        })
+        const subscribeToPartyRoom= async () => {
+          const channel = await events.connect(`/game/${screen}`, {
+            authMode: "iam",
+          });
+  
+           setIsConnected(true);
+          
+          const sub = channel.subscribe({
+            next: async (data) => {
+              console.log(data.event.type);
+              if (data?.event?.type === "LIVE_READY_DAHLING") {
+                console.log("Live peer ready signal received",data?.event?.payload?.message);
+                dahlingPeer?.signal(data?.event?.payload?.message);
+                setIsLiveConnection(true);
+              }
+  
+              if (data?.event?.type === "LIVE_READY_MEMI") {
+                console.log("Audio Peer ready signal received",data?.event?.payload?.message);
+                memiPeer?.signal(data?.event?.payload?.message);
+                setIsAudioPeerConnection(true);
+              }
+             
+           },
+            error: async (err) => {
+              console.log("Connection error", err);
+              console.log("Failed to connect to the game");
+            },
+          });
+          return sub;
+        };
+  
+        const subPromise = subscribeToPartyRoom();
+        console.log(subPromise);
+      
       } catch (error) {
         console.error("Error accessing media devices:", error);
       }
+      
     }
   };
 
