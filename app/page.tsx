@@ -94,7 +94,7 @@ export default function Home() {
           }
         }
       )
-      sendSignal(screen,"LIVE_READY_POPLAR",pop);
+     // sendSignal(screen,"LIVE_READY_POPLAR",pop);
       waitForPeerSignal();
       } catch (error) {
         console.error("Error accessing media devices:", error);
