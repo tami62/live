@@ -6,122 +6,124 @@ import amplifyConfig from "../amplify_outputs.json";
 import { Amplify } from "aws-amplify";
 import { events } from "aws-amplify/api";
 //import Peer, { Instance } from 'simple-peer';
-import Peer from 'simple-peer';
-import DataTable from 'react-data-table-component';
+import Peer from "simple-peer";
+import DataTable from "react-data-table-component";
 import { useSearchParams } from "next/navigation";
 
-
-
 export default function Home() {
-
- 
   const dahlingWebCamRef = useRef<Webcam>(null);
   const [isConnected, setIsConnected] = useState<boolean>(true);
   const [isLiveConnection, setIsLiveConnection] = useState<boolean>(false);
-  const [isAudioPeerConnection, setIsAudioPeerConnection] = useState<boolean>(false);
-  const [screen,setScreen] = useState<string>("");
-  const [connectedScreen,setConnectedScreen] = useState<string>("");
+  const [isAudioPeerConnection, setIsAudioPeerConnection] =
+    useState<boolean>(false);
+  const [screen, setScreen] = useState<string>("");
+  const [connectedScreen, setConnectedScreen] = useState<string>("");
   // const [dahlingPeer,setDahlingPeer] = useState<Instance|null>(null);
   // const [memiPeer, setMemiPeer] = useState<Instance|null>(null);
   const memiAudioRef = useRef<HTMLAudioElement>(null);
   const searchParams = useSearchParams();
 
   useEffect(() => {
-
     const sc = searchParams.get("sc");
-    setScreen(sc?sc:"");
+    setScreen(sc ? sc : "");
     Amplify.configure(amplifyConfig, { ssr: true });
- 
   }, []);
 
   const columns = [
     {
-      name: 'Requester',
-      selector: (row: { title: string; }) => row.title,
+      name: "Requester",
+      selector: (row: { title: string }) => row.title,
     },
     {
-      name: 'Year',
-      selector: (row: { time: string; }) => row.time,
+      name: "Year",
+      selector: (row: { time: string }) => row.time,
     },
     {
-      name: 'content',
-      selector: (row: { content: string; }) => row.content,
+      name: "content",
+      selector: (row: { content: string }) => row.content,
     },
   ];
-  
+
   const data = [
-      {
+    {
       id: 1,
-      title: 'Requestor',
-      time: '12/12/2025 5:00PM',
-      content: 'This new song'
+      title: "Requestor",
+      time: "12/12/2025 5:00PM",
+      content: "This new song",
     },
     {
       id: 2,
-      title: 'Ghostbusters',
-      time: '12/12/2025 7:00PM',
-      content: 'that new song'
+      title: "Ghostbusters",
+      time: "12/12/2025 7:00PM",
+      content: "that new song",
     },
-  ]
+  ];
 
-  const onCamera = (stream:MediaStream ) => {
-    console.log('Stream started:', stream);
-    console.log('screen code:',screen );
-    console.log('connected Screen',connectedScreen );
+  const onCamera = (stream: MediaStream) => {
+    console.log("Stream started:", stream);
+    console.log("screen code:", screen);
+    console.log("connected Screen", connectedScreen);
 
-    if (screen!=connectedScreen) {
+    if (screen != connectedScreen) {
       try {
-   
         setConnectedScreen(screen);
-        console.log('establishing peer connections:' );
-        const dahlingPeer = new Peer({ initiator: true, stream:stream,trickle: false  }); // Both audio and video out to Dahling
-        const memiPeer = new Peer({ initiator: true,trickle: false }); // no audior out video out on Memi for now, used for audio in only.
-    
-        dahlingPeer?.on("signal",(data) => {
-          
+        console.log("establishing peer connections:");
+        const dahlingPeer = new Peer({
+          initiator: true,
+          stream: stream,
+          trickle: false,
+        }); // Both audio and video out to Dahling
+        const memiPeer = new Peer({ initiator: true, trickle: false }); // no audior out video out on Memi for now, used for audio in only.
+
+        dahlingPeer?.on("signal", (data) => {
           const initSignal = JSON.stringify(data);
-          console.log("Signal", initSignal)
-          sendSignal(screen,"LIVE_READY_POPLAR",initSignal);
+          console.log("Signal", initSignal);
+          sendSignal(screen, "LIVE_READY_POPLAR", initSignal);
           setIsLiveConnection(true);
-        })
-        dahlingPeer.on('error', (err) => {
-          console.error('Peer error', err);
         });
-    
-        dahlingPeer.on('connect', () => {
-          console.log('CONNECTED')
-         })
-    
-        memiPeer?.on("Stream",(remoteStream) => {
+        dahlingPeer.on("error", (err) => {
+          console.error("Peer error", err);
+        });
+
+        dahlingPeer.on("connect", () => {
+          console.log("CONNECTED");
+        });
+
+        memiPeer?.on("stream", (remoteStream) => {
           setIsAudioPeerConnection(true);
-          console.log("is audio connection",isAudioPeerConnection);
+          console.log("is audio connection", isAudioPeerConnection);
           if (memiAudioRef.current) {
-              memiAudioRef.current.srcObject = remoteStream;
+            memiAudioRef.current.srcObject = remoteStream;
           }
-        })
-        const subscribeToPartyRoom= async () => {
+        });
+        const subscribeToPartyRoom = async () => {
           const channel = await events.connect(`/game/${screen}`, {
             authMode: "iam",
           });
-  
-           setIsConnected(true);
-          
+
+          setIsConnected(true);
+
           const sub = channel.subscribe({
             next: async (data) => {
               console.log(data.event.type);
               if (data?.event?.type === "LIVE_READY_DAHLING") {
-                console.log("Live peer ready signal received",data?.event?.payload?.message);
+                console.log(
+                  "Live peer ready signal received",
+                  data?.event?.payload?.message
+                );
                 dahlingPeer?.signal(data?.event?.payload?.message);
                 setIsLiveConnection(true);
               }
-  
+
               if (data?.event?.type === "LIVE_READY_MEMI") {
-                console.log("Audio Peer ready signal received",data?.event?.payload?.message);
+                console.log(
+                  "Audio Peer ready signal received",
+                  data?.event?.payload?.message
+                );
                 memiPeer?.signal(data?.event?.payload?.message);
                 setIsAudioPeerConnection(true);
               }
-             
-           },
+            },
             error: async (err) => {
               console.log("Connection error", err);
               console.log("Failed to connect to the game");
@@ -129,30 +131,29 @@ export default function Home() {
           });
           return sub;
         };
-  
+
         const subPromise = subscribeToPartyRoom();
         console.log(subPromise);
-      
       } catch (error) {
         console.error("Error accessing media devices:", error);
       }
-      
     }
   };
 
- 
-  const sendSignal = async (screenCode:string,eventType:string, message:string) => {
+  const sendSignal = async (
+    screenCode: string,
+    eventType: string,
+    message: string
+  ) => {
     events.post(
-          `/game/${screenCode}`,
-          {
-            type: eventType,
-            payload: {"message":message},
-          },
-          { authMode: "iam" }
+      `/game/${screenCode}`,
+      {
+        type: eventType,
+        payload: { message: message },
+      },
+      { authMode: "iam" }
     );
-  }
-
-  
+  };
 
   return (
     <div>
@@ -161,24 +162,22 @@ export default function Home() {
         className="w-full max-w-lg border border-gray-600 rounded-lg"
         onUserMedia={onCamera}
       />
-   
- <span>Connected:{isConnected}</span>
- <span>Live Connection:{isLiveConnection}</span>
- <span>Audio Connection:{isAudioPeerConnection}</span>
- <span>screen code:{screen}</span>
 
-  <audio   ref={memiAudioRef} src="null" controls className="mt-2"  />
-  <button onClick={()=> {
-       setScreen("4AZMYYOX");
-    }
-  }
- >Set Screen Button </button>
+      <span>Connected:{isConnected}</span>
+      <span>Live Connection:{isLiveConnection}</span>
+      <span>Audio Connection:{isAudioPeerConnection}</span>
+      <span>screen code:{screen}</span>
 
-  
-  <DataTable
-			columns={columns}
-			data={data}
-		/>
-  </div>
-     );
+      <audio ref={memiAudioRef} src="null" controls className="mt-2" />
+      <button
+        onClick={() => {
+          setScreen("4AZMYYOX");
+        }}
+      >
+        Set Screen Button{" "}
+      </button>
+
+      <DataTable columns={columns} data={data} />
+    </div>
+  );
 }
