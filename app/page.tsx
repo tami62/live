@@ -1,21 +1,24 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import Webcam from "react-webcam";
+//import Webcam from "react-webcam";
 import amplifyConfig from "../amplify_outputs.json";
 import { Amplify } from "aws-amplify";
 import { events } from "aws-amplify/api";
 //import Peer, { Instance } from 'simple-peer';
 import Peer from 'simple-peer';
-import DataTable from 'react-data-table-component';
 import { useSearchParams } from "next/navigation";
+import LiveStreamViewer from "./PeerLiveStream";
 
-
+Amplify.configure(amplifyConfig, { ssr: true });
+const channel = await events.connect(`/game/1212121`, {
+  authMode: "iam",
+});
 
 export default function Home() {
 
  
-  const dahlingWebCamRef = useRef<Webcam>(null);
+  //const dahlingWebCamRef = useRef<Webcam>(null);
   const [isConnected, setIsConnected] = useState<boolean>(true);
   const [isLiveConnection, setIsLiveConnection] = useState<boolean>(false);
   const [isAudioPeerConnection, setIsAudioPeerConnection] = useState<boolean>(false);
@@ -25,44 +28,55 @@ export default function Home() {
   // const [memiPeer, setMemiPeer] = useState<Instance|null>(null);
   const memiAudioRef = useRef<HTMLAudioElement>(null);
   const searchParams = useSearchParams();
-
+  const localVideoRef = useRef<HTMLVideoElement>(null);
+  const [localStream, setLocalStream] = useState<MediaStream | null>(null);
+  interface LiveViewerRefType {
+    callsendInitSignal: (incomingSignal:string) => void;
+  }
+ 
+  const liveViewerRef = useRef<LiveViewerRefType | null>(null);
+  
   useEffect(() => {
 
     const sc = searchParams.get("sc");
     setScreen(sc?sc:"");
-    Amplify.configure(amplifyConfig, { ssr: true });
- 
+
+    navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+      .then((stream) => {
+        setLocalStream(stream);
+        if (localVideoRef.current) {
+          localVideoRef.current.srcObject = stream;
+         }
+        onCamera(stream);
+      });
+
+      const sub = channel.subscribe({
+        next: async (data) => {
+          console.log("received event:", data);
+          if (data?.event?.type === "LIVE_READY_POPLAR") {
+              liveViewerRef?.current?.callsendInitSignal(data?.event?.payload?.message);
+              console.log("liveViewerRef",liveViewerRef);
+              console.log("liveViewerRef.current",liveViewerRef?.current);
+          } 
+        },
+        error: (err) => {
+          console.error("Connection error", err);
+          console.error("Failed to connect to the game");
+        },
+      }
+    )
+    return () => {
+      Promise.resolve(sub).then((sub) => {
+        if (!sub) return;
+        console.log("closing the connection");
+        sub.unsubscribe();
+      });
+    };
   }, []);
 
-  const columns = [
-    {
-      name: 'Requester',
-      selector: (row: { title: string; }) => row.title,
-    },
-    {
-      name: 'Year',
-      selector: (row: { time: string; }) => row.time,
-    },
-    {
-      name: 'content',
-      selector: (row: { content: string; }) => row.content,
-    },
-  ];
-  
-  const data = [
-      {
-      id: 1,
-      title: 'Requestor',
-      time: '12/12/2025 5:00PM',
-      content: 'This new song'
-    },
-    {
-      id: 2,
-      title: 'Ghostbusters',
-      time: '12/12/2025 7:00PM',
-      content: 'that new song'
-    },
-  ]
+
+
+
 
   const onCamera = (stream:MediaStream ) => {
     console.log('Stream started:', stream);
@@ -132,6 +146,7 @@ export default function Home() {
   
         const subPromise = subscribeToPartyRoom();
         console.log(subPromise);
+        console.log(localStream?.active);
       
       } catch (error) {
         console.error("Error accessing media devices:", error);
@@ -155,13 +170,13 @@ export default function Home() {
   
 
   return (
-    <div>
-      <Webcam
-        ref={dahlingWebCamRef}
-        className="w-full max-w-lg border border-gray-600 rounded-lg"
-        onUserMedia={onCamera}
-      />
-   
+     <div>
+   <video ref={localVideoRef} autoPlay muted playsInline />
+   <LiveStreamViewer screenCode={screen} ref={liveViewerRef} />
+
+
+    <video ref={localVideoRef} autoPlay muted playsInline />
+    
  <span>Connected:{isConnected}</span>
  <span>Live Connection:{isLiveConnection}</span>
  <span>Audio Connection:{isAudioPeerConnection}</span>
@@ -175,10 +190,7 @@ export default function Home() {
  >Set Screen Button </button>
 
   
-  <DataTable
-			columns={columns}
-			data={data}
-		/>
+ 
   </div>
      );
 }
