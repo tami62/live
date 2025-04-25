@@ -15,19 +15,16 @@ Amplify.configure(amplifyConfig, { ssr: true });
 export default function Home() {
 
  
-  //const dahlingWebCamRef = useRef<Webcam>(null);
   const [isConnected, setIsConnected] = useState<boolean>(true);
   const [isLiveConnection, setIsLiveConnection] = useState<boolean>(false);
-//  const [isAudioPeerConnection, setIsAudioPeerConnection] =
-    useState<boolean>(false);
+  useState<boolean>(false);
   const [screen, setScreen] = useState<string>("1212121");
   const [connectedScreen, setConnectedScreen] = useState<string>("567889010");
-  // const [dahlingPeer,setDahlingPeer] = useState<Instance|null>(null);
-  // const [memiPeer, setMemiPeer] = useState<Instance|null>(null);
-//  const memiAudioRef = useRef<HTMLAudioElement>(null);
+
   const searchParams = useSearchParams();
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
+
   interface LiveViewerRefType {
     callsendInitSignal: (incomingSignal:string) => void;
   }
@@ -35,8 +32,8 @@ export default function Home() {
   const liveViewerRef = useRef<LiveViewerRefType | null>(null);
   
   useEffect(() => {
-    const sc = searchParams.get("sc");
-    setScreen(sc?sc:"");
+    // const sc = searchParams.get("sc");
+    // setScreen(sc?sc:"");
 
     navigator.mediaDevices.getUserMedia({ video: true, audio: true })
       .then((stream) => {
@@ -136,7 +133,7 @@ export default function Home() {
   return (
      <div>
    <video ref={localVideoRef} autoPlay muted playsInline />
-   <LiveStreamViewer screenCode={screen} ref={liveViewerRef} />
+   <LiveStreamViewer screenCode="{screen}" ref={liveViewerRef} />
 
 
     <video ref={localVideoRef} autoPlay muted playsInline />
