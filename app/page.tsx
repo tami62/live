@@ -74,10 +74,6 @@ export default function Home() {
     };
   }, []);
 
-
-
-
-
   const onCamera = (stream: MediaStream) => {
     console.log("Stream started:", stream);
     console.log("screen code:", screen);
