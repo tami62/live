@@ -32,8 +32,8 @@ export default function Home() {
   const liveViewerRef = useRef<LiveViewerRefType | null>(null);
   
   useEffect(() => {
-    // const sc = searchParams.get("sc");
-    // setScreen(sc?sc:"");
+     const sc = searchParams.get("sc");
+    setScreen(sc?sc:"1212121");
 
     navigator.mediaDevices.getUserMedia({ video: true, audio: true })
       .then((stream) => {
