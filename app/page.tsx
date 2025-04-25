@@ -23,8 +23,8 @@ export default function Home() {
   const [isLiveConnection, setIsLiveConnection] = useState<boolean>(false);
   const [isAudioPeerConnection, setIsAudioPeerConnection] =
     useState<boolean>(false);
-  const [screen, setScreen] = useState<string>("");
-  const [connectedScreen, setConnectedScreen] = useState<string>("");
+  const [screen, setScreen] = useState<string>("1212121");
+  const [connectedScreen, setConnectedScreen] = useState<string>("567889010");
   // const [dahlingPeer,setDahlingPeer] = useState<Instance|null>(null);
   // const [memiPeer, setMemiPeer] = useState<Instance|null>(null);
   const memiAudioRef = useRef<HTMLAudioElement>(null);
@@ -82,7 +82,7 @@ export default function Home() {
     console.log("Stream started:", stream);
     console.log("screen code:", screen);
     console.log("connected Screen", connectedScreen);
-
+ 
     if (screen != connectedScreen) {
       try {
         setConnectedScreen(screen);
