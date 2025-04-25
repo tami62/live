@@ -11,9 +11,6 @@ import { useSearchParams } from "next/navigation";
 import LiveStreamViewer from "./PeerLiveStream";
 
 Amplify.configure(amplifyConfig, { ssr: true });
-const channel = await events.connect(`/game/1212121`, {
-  authMode: "iam",
-});
 
 export default function Home() {
 
@@ -21,13 +18,13 @@ export default function Home() {
   //const dahlingWebCamRef = useRef<Webcam>(null);
   const [isConnected, setIsConnected] = useState<boolean>(true);
   const [isLiveConnection, setIsLiveConnection] = useState<boolean>(false);
-  const [isAudioPeerConnection, setIsAudioPeerConnection] =
+//  const [isAudioPeerConnection, setIsAudioPeerConnection] =
     useState<boolean>(false);
   const [screen, setScreen] = useState<string>("1212121");
   const [connectedScreen, setConnectedScreen] = useState<string>("567889010");
   // const [dahlingPeer,setDahlingPeer] = useState<Instance|null>(null);
   // const [memiPeer, setMemiPeer] = useState<Instance|null>(null);
-  const memiAudioRef = useRef<HTMLAudioElement>(null);
+//  const memiAudioRef = useRef<HTMLAudioElement>(null);
   const searchParams = useSearchParams();
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
@@ -48,31 +45,9 @@ export default function Home() {
           localVideoRef.current.srcObject = stream;
          }
         onCamera(stream);
-      });
-
-      const sub = channel.subscribe({
-        next: async (data) => {
-          console.log("received event:", data);
-          if (data?.event?.type === "LIVE_READY_POPLAR") {
-              liveViewerRef?.current?.callsendInitSignal(data?.event?.payload?.message);
-              console.log("liveViewerRef",liveViewerRef);
-              console.log("liveViewerRef.current",liveViewerRef?.current);
-          } 
-        },
-        error: (err) => {
-          console.error("Connection error", err);
-          console.error("Failed to connect to the game");
-        },
-      }
-    )
-    return () => {
-      Promise.resolve(sub).then((sub) => {
-        if (!sub) return;
-        console.log("closing the connection");
-        sub.unsubscribe();
-      });
-    };
-  }, []);
+       
+        })
+     }, []);
 
   const onCamera = (stream: MediaStream) => {
     console.log("Stream started:", stream);
@@ -88,8 +63,7 @@ export default function Home() {
           stream: stream,
           trickle: false,
         }); // Both audio and video out to Dahling
-        const memiPeer = new Peer({ initiator: true, trickle: false }); // no audior out video out on Memi for now, used for audio in only.
-
+       
         dahlingPeer?.on("signal", (data) => {
           const initSignal = JSON.stringify(data);
           console.log("Signal", initSignal);
@@ -104,13 +78,7 @@ export default function Home() {
           console.log("CONNECTED");
         });
 
-        memiPeer?.on("stream", (remoteStream) => {
-          setIsAudioPeerConnection(true);
-          console.log("is audio connection", isAudioPeerConnection);
-          if (memiAudioRef.current) {
-            memiAudioRef.current.srcObject = remoteStream;
-          }
-        });
+       
         const subscribeToPartyRoom = async () => {
           const channel = await events.connect(`/game/${screen}`, {
             authMode: "iam",
@@ -130,14 +98,7 @@ export default function Home() {
                 setIsLiveConnection(true);
               }
 
-              if (data?.event?.type === "LIVE_READY_MEMI") {
-                console.log(
-                  "Audio Peer ready signal received",
-                  data?.event?.payload?.message
-                );
-                memiPeer?.signal(data?.event?.payload?.message);
-                setIsAudioPeerConnection(true);
-              }
+              
             },
             error: async (err) => {
               console.log("Connection error", err);
