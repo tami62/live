@@ -143,12 +143,10 @@ export default function Home() {
     
  <span>Connected:{isConnected}</span>
  <span>Live Connection:{isLiveConnection}</span>
- <span>Audio Connection:{isAudioPeerConnection}</span>
  <span>screen code:{screen}</span>
 
       <span>Connected:{isConnected}</span>
       <span>Live Connection:{isLiveConnection}</span>
-      <span>Audio Connection:{isAudioPeerConnection}</span>
       <span>screen code:{screen}</span>
 
   
