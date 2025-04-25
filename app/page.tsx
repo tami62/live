@@ -133,7 +133,7 @@ export default function Home() {
   return (
      <div>
    <video ref={localVideoRef} autoPlay muted playsInline />
-   <LiveStreamViewer screenCode="{screen}" ref={liveViewerRef} />
+   <LiveStreamViewer screenCode={screen} ref={liveViewerRef} />
 
 
     <video ref={localVideoRef} autoPlay muted playsInline />
