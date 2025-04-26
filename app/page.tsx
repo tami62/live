@@ -18,7 +18,7 @@ export default function Home() {
   const [isConnected, setIsConnected] = useState<boolean>(true);
   const [isLiveConnection, setIsLiveConnection] = useState<boolean>(false);
   useState<boolean>(false);
-  const [screen, setScreen] = useState<string>("1212121");
+  const [screen, setScreen] = useState<string>("");
 
   const searchParams = useSearchParams();
   const localVideoRef = useRef<HTMLVideoElement>(null);
@@ -45,6 +45,10 @@ export default function Home() {
         initiator: false,
         stream: stream,
         trickle: false,
+        offerOptions: { 
+            offerToReceiveVideo: false,
+            offerToReceiveAudio: false,
+        }
       }); 
       dahlingRef.current = dahlingPeer;
       dahlingPeer?.on("signal", (data) => {

@@ -16,7 +16,10 @@ const LiveStreamViewer = forwardRef<LiveViewerRefType, LiveStreamViewerProps>(({
   const videoRef = useRef<HTMLVideoElement>(null);
  
  
-  const popPeer = new Peer({ initiator: true,trickle: false });
+  const popPeer = new Peer({ initiator: true,trickle: false, offerOptions: { 
+    offerToReceiveVideo: true,
+    offerToReceiveAudio: true,
+} });
 
   useImperativeHandle(ref, () => ({
     callsendInitSignal: sendInitSignal,
@@ -72,6 +75,10 @@ const LiveStreamViewer = forwardRef<LiveViewerRefType, LiveStreamViewerProps>(({
 
   const sendSignal = async (screenCode:string,eventType:string, message:string) => {
     console.log("sendSignal",screenCode,eventType,message);
+    await events.connect(`/game/${screenCode}`, {
+      authMode: "iam",
+    });
+
     events.post(
           `/game/${screenCode}`,
           {
