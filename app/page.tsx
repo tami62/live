@@ -88,7 +88,7 @@ export default function Home() {
               console.log(data.event.type);
               if (data?.event?.type === "LIVE_READY_DAHLING") {
                 console.log(
-                  "Live peer ready signal received",
+                  "Live peer ready signal received from dahling",
                   data?.event?.payload?.message
                 );
                 dahlingPeer?.signal(data?.event?.payload?.message);
@@ -96,7 +96,7 @@ export default function Home() {
               }
               if (data?.event?.type === "LIVE_READY_POPLAR") {
                 console.log(
-                  "Live peer ready signal received",
+                  "Live peer ready signal received from poplar",
                   data?.event?.payload?.message
                 );
                 liveViewerRef.current?.callsendInitSignal(data?.event?.payload?.message);
@@ -114,8 +114,9 @@ export default function Home() {
         };
 
         const subPromise = subscribeToPartyRoom();
-        console.log(subPromise);
-        console.log(localStream?.active);
+        console.log("subscription to party room completed",screen);
+        console.log("sub promise",subPromise);
+        console.log("localstream active",localStream?.active);
       
       } catch (error) {
         console.error("Error accessing media devices:", error);
@@ -128,6 +129,7 @@ export default function Home() {
     eventType: string,
     message: string
   ) => {
+    console.log("sendSignal",screenCode,eventType,message);
     events.post(
       `/game/${screenCode}`,
       {
@@ -145,17 +147,10 @@ export default function Home() {
 
 
     <video ref={localVideoRef} autoPlay muted playsInline />
-    
- <span>Connected:{isConnected}</span>
+  <span>screen code:{screen}</span>
+ <span>Room Connection:{isConnected}</span>
  <span>Live Connection:{isLiveConnection}</span>
- <span>screen code:{screen}</span>
 
-      <span>Connected:{isConnected}</span>
-      <span>Live Connection:{isLiveConnection}</span>
-      <span>screen code:{screen}</span>
-
-  
- 
   </div>
      );
 }
