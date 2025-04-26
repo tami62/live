@@ -113,6 +113,7 @@ export default function Home() {
         console.log("closing the connection");
         sub.unsubscribe();
       });
+      dahlingRef.current?.destroy();
     };
      }, []);
 
