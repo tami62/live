@@ -72,7 +72,11 @@ const LiveStreamViewer = forwardRef<LiveViewerRefType, LiveStreamViewerProps>(({
 
   const sendSignal = async (screenCode:string,eventType:string, message:string) => {
     console.log("sendSignal",screenCode,eventType,message);
- 
+  
+   await events.connect(`/game/${screen}`, {
+      authMode: "iam",
+    });
+
     await events.post(
           `/game/${screenCode}`,
           {
