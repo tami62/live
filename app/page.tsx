@@ -94,6 +94,14 @@ export default function Home() {
                 dahlingPeer?.signal(data?.event?.payload?.message);
                 setIsLiveConnection(true);
               }
+              if (data?.event?.type === "LIVE_READY_POPLAR") {
+                console.log(
+                  "Live peer ready signal received",
+                  data?.event?.payload?.message
+                );
+                liveViewerRef.current?.callsendInitSignal(data?.event?.payload?.message);
+                setIsLiveConnection(true);
+              }
 
               
             },

@@ -63,14 +63,16 @@ const LiveStreamViewer = forwardRef<LiveViewerRefType, LiveStreamViewerProps>(({
   }, [screenCode]);
 
   const sendInitSignal = (incomingSignal:string) => {
+    console.log("sendInitSignal back incoming",incomingSignal);
     popPeer.signal(incomingSignal);
     if (dahlingSignal.length>0) {
-      console.log("sendInitSignal back",dahlingSignal);
+      console.log("sendInitSignal back reply",dahlingSignal);
       sendSignal(screenCode,"LIVE_READY_DAHLING",dahlingSignal);
     }
   };
 
   const sendSignal = async (screenCode:string,eventType:string, message:string) => {
+    console.log("sendSignal",screenCode,eventType,message);
     events.post(
           `/game/${screenCode}`,
           {
