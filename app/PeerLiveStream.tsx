@@ -15,8 +15,8 @@ interface LiveViewerRefType {
 const LiveStreamViewer = forwardRef<LiveViewerRefType, LiveStreamViewerProps>(({ screenCode }, ref) => {
   const videoRef = useRef<HTMLVideoElement>(null);
  
-  const [dahlingSignal,setDahlingSignal] = useState<string>("");
-  const popPeer = new Peer({ initiator: true,trickle: false });
+ 
+  const popPeer = new Peer({ initiator: false,trickle: false });
 
   useImperativeHandle(ref, () => ({
     callsendInitSignal: sendInitSignal,
@@ -29,8 +29,7 @@ const LiveStreamViewer = forwardRef<LiveViewerRefType, LiveStreamViewerProps>(({
     popPeer.on('signal', (signal) => {
       const initSignal = JSON.stringify(signal);
       console.log("Signal on start", initSignal);
-      //sendSignal(screenCode,"LIVE_READY_DAHLING",initSignal)
-      setDahlingSignal(initSignal);
+      sendSignal(screenCode,"LIVE_READY_DAHLING",initSignal);
      });
 
     popPeer.on('stream', (remoteStream) => {
@@ -68,10 +67,7 @@ const LiveStreamViewer = forwardRef<LiveViewerRefType, LiveStreamViewerProps>(({
   const sendInitSignal = (incomingSignal:string) => {
     console.log("sendInitSignal back incoming",incomingSignal);
     popPeer.signal(incomingSignal);
-    if (dahlingSignal.length>0) {
-      console.log("sendInitSignal back reply",dahlingSignal);
-      sendSignal(screenCode,"LIVE_READY_DAHLING",dahlingSignal);
-    }
+    
   };
 
   const sendSignal = async (screenCode:string,eventType:string, message:string) => {
