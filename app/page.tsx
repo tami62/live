@@ -18,7 +18,7 @@ export default function Home() {
   const [isConnected, setIsConnected] = useState<boolean>(true);
   const [isLiveConnection, setIsLiveConnection] = useState<boolean>(false);
   useState<boolean>(false);
-  const [screen, setScreen] = useState<string>("");
+  const [screen, setScreen] = useState<string>("1212121");
 
   const searchParams = useSearchParams();
   const localVideoRef = useRef<HTMLVideoElement>(null);
@@ -73,7 +73,7 @@ export default function Home() {
 
       setIsConnected(true);
 
-      const sub = await channel.subscribe({
+      const sub = channel.subscribe({
         next: async (data) => {
           console.log("event received", data.event.type);
              if (data?.event?.type === "LIVE_READY_DAHLING") {
