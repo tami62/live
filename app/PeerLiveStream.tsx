@@ -16,7 +16,7 @@ const LiveStreamViewer = forwardRef<LiveViewerRefType, LiveStreamViewerProps>(({
   const videoRef = useRef<HTMLVideoElement>(null);
  
  
-  const popPeer = new Peer({ initiator: false,trickle: false });
+  const popPeer = new Peer({ initiator: true,trickle: false });
 
   useImperativeHandle(ref, () => ({
     callsendInitSignal: sendInitSignal,
