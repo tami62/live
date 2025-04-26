@@ -1,10 +1,6 @@
 import React, { useRef, useEffect, forwardRef,useImperativeHandle} from 'react';
 import Peer from 'simple-peer';
 import { events } from "aws-amplify/api";
-//import Countdown from 'react-countdown';
-//import DatePicker from 'react-datepicker';
-
-
 
 interface LiveStreamViewerProps {
   screenCode: string;
@@ -76,12 +72,8 @@ const LiveStreamViewer = forwardRef<LiveViewerRefType, LiveStreamViewerProps>(({
 
   const sendSignal = async (screenCode:string,eventType:string, message:string) => {
     console.log("sendSignal",screenCode,eventType,message);
-  
-   await events.connect(`/game/${screen}`, {
-      authMode: "iam",
-    });
-
-    events.post(
+ 
+    await events.post(
           `/game/${screenCode}`,
           {
             type: eventType,
