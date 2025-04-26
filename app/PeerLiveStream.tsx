@@ -16,7 +16,7 @@ const LiveStreamViewer = forwardRef<LiveViewerRefType, LiveStreamViewerProps>(({
   const videoRef = useRef<HTMLVideoElement>(null);
  
   const [dahlingSignal,setDahlingSignal] = useState<string>("");
-  const popPeer = new Peer({ initiator: false,trickle: false });
+  const popPeer = new Peer({ initiator: true,trickle: false });
 
   useImperativeHandle(ref, () => ({
     callsendInitSignal: sendInitSignal,
@@ -40,7 +40,10 @@ const LiveStreamViewer = forwardRef<LiveViewerRefType, LiveStreamViewerProps>(({
         if (videoRef.current) {
           console.log("peer on stream video ref current");
             videoRef.current.srcObject = remoteStream;
-         //   videoRef.current.play();
+            videoRef.current
+            .play()
+            .then(() => console.log("Video playing"))
+            .catch((err) => console.error("Play error:", err));
         } 
       }
      });
