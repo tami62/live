@@ -13,8 +13,8 @@ interface HostRefType {
 const LiveStreamHost = forwardRef<HostRefType, LiveStreamHostProps>(({ screenCode }, ref) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const peerRef = useRef<Peer.Instance | null>(null);
-  const [screenStream, setScreenStream] = useState<MediaStream | null>(null);
-  const [hostSignal, setHostSignal] = useState<string>("");
+  const [, setScreenStream] = useState<MediaStream | null>(null);
+  const [, setHostSignal] = useState<string>("");
 
   useImperativeHandle(ref, () => ({
     callsendInitSignal: sendInitSignal,
