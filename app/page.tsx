@@ -16,7 +16,7 @@ export default function Home() {
 
   const searchParams = useSearchParams();
   const localVideoRef = useRef<HTMLVideoElement>(null);
-  const [localStream, setLocalStream] = useState<MediaStream | null>(null);
+  const [, setLocalStream] = useState<MediaStream | null>(null);
   const dahlingRef = useRef<Peer.Instance | null>(null);
   const [, setLastSentSignal] = useState<string>("");
 
