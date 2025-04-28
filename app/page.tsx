@@ -42,7 +42,7 @@ export default function Home() {
        }
      
       const dahlingPeer = new Peer({
-        initiator: false,
+        initiator: true,
         stream: stream,
         trickle: false,
         offerOptions: { 
