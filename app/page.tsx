@@ -18,6 +18,7 @@ export default function Home() {
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const [, setLocalStream] = useState<MediaStream | null>(null);
   const dahlingRef = useRef<Peer.Instance | null>(null);
+  const [lastSentSignal, setLastSentSignal] = useState<string>("");
 
   interface LiveViewerRefType {
     callsendInitSignal: (incomingSignal: string) => void;
@@ -31,7 +32,10 @@ export default function Home() {
         const screenCode = sc ? sc : "1212121";
         setScreen(screenCode);
 
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: true,
+          audio: true,
+        });
         setLocalStream(stream);
         if (localVideoRef.current) {
           localVideoRef.current.srcObject = stream;
@@ -53,6 +57,7 @@ export default function Home() {
         dahlingPeer.on("signal", async (data) => {
           const initSignal = JSON.stringify(data);
           console.log("Host offer signal:", initSignal);
+          setLastSentSignal(initSignal);
           await sendSignal(screenCode, "LIVE_READY_POPLAR", initSignal);
           setIsLiveConnection(true);
         });
@@ -65,7 +70,9 @@ export default function Home() {
           console.error("Peer error:", err);
         });
 
-        const channel = await events.connect(`/game/${screenCode}`, { authMode: "iam" });
+        const channel = await events.connect(`/game/${screenCode}`, {
+          authMode: "iam",
+        });
         setIsConnected(true);
 
         const sub = channel.subscribe({
@@ -83,6 +90,12 @@ export default function Home() {
                 liveViewerRef.current.callsendInitSignal(incomingSignal);
               } else {
                 console.warn("ViewerRef not ready yet.");
+              }
+            }
+            if (data?.event?.type === "POP_JOINED") {
+              console.log("Receiver (Poplar) joined, re-sending my offer");
+              if (dahlingRef.current) {
+                dahlingRef.current.signal(JSON.parse(lastSentSignal));
               }
             }
           },
@@ -104,7 +117,11 @@ export default function Home() {
     setup();
   }, []);
 
-  const sendSignal = async (screenCode: string, eventType: string, message: string) => {
+  const sendSignal = async (
+    screenCode: string,
+    eventType: string,
+    message: string
+  ) => {
     console.log("Sending Signal:", screenCode, eventType, message);
     try {
       await events.post(
@@ -119,8 +136,14 @@ export default function Home() {
 
   return (
     <div>
-      <video ref={localVideoRef} autoPlay muted playsInline style={{ width: "100%", height: "50vh", border: "1px solid green" }} />
-      
+      <video
+        ref={localVideoRef}
+        autoPlay
+        muted
+        playsInline
+        style={{ width: "100%", height: "50vh", border: "1px solid green" }}
+      />
+
       {/* <LiveStreamViewer screenCode={screen} ref={liveViewerRef} /> */}
 
       <div>
