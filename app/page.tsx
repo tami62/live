@@ -128,8 +128,8 @@ export default function Home() {
             }
             if (data?.event?.type === "POP_JOINED") {
               console.log("Receiver (Poplar) joined, re-sending my offer");
-              if (localStream) {
-                createNewHostPeer(localStream);
+              if (stream) {
+                createNewHostPeer(stream);
               }
             }
           },
