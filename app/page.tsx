@@ -16,7 +16,7 @@ export default function Home() {
 
   const searchParams = useSearchParams();
   const localVideoRef = useRef<HTMLVideoElement>(null);
-  const [, setLocalStream] = useState<MediaStream | null>(null);
+  const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const dahlingRef = useRef<Peer.Instance | null>(null);
   const [, setLastSentSignal] = useState<string>("");
 
@@ -128,8 +128,8 @@ export default function Home() {
             }
             if (data?.event?.type === "POP_JOINED") {
               console.log("Receiver (Poplar) joined, re-sending my offer");
-              if (stream) {
-                createNewHostPeer(stream);
+              if (localStream) {
+                createNewHostPeer(localStream);
               }
             }
           },
@@ -149,7 +149,7 @@ export default function Home() {
     };
 
     setup();
-  }, []);
+  }, [localStream]);
 
   const sendSignal = async (
     screenCode: string,
