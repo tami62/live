@@ -1,117 +1,133 @@
 "use client";
-import React, { useRef, useEffect, useState, forwardRef, useImperativeHandle } from "react";
-import Peer from "simple-peer";
+
+import { useState, useRef, useEffect } from "react";
+import amplifyConfig from "../amplify_outputs.json";
+import { Amplify } from "aws-amplify";
 import { events } from "aws-amplify/api";
+import Peer from "simple-peer";
+import { useSearchParams } from "next/navigation";
 
-interface LiveStreamHostProps {
-  screenCode: string;
-}
-interface HostRefType {
-  callsendInitSignal: (incomingSignal: string) => void;
-}
+Amplify.configure(amplifyConfig, { ssr: true });
 
-const LiveStreamHost = forwardRef<HostRefType, LiveStreamHostProps>(({ screenCode }, ref) => {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const peerRef = useRef<Peer.Instance | null>(null);
-  const [, setScreenStream] = useState<MediaStream | null>(null);
-  const [, setHostSignal] = useState<string>("");
+export default function Home() {
+  const [isConnected, setIsConnected] = useState<boolean>(false);
+  const [isLiveConnection, setIsLiveConnection] = useState<boolean>(false);
+  const [screen, setScreen] = useState<string>("1212121");
 
-  useImperativeHandle(ref, () => ({
-    callsendInitSignal: sendInitSignal,
-  }));
+  const searchParams = useSearchParams();
+  const localVideoRef = useRef<HTMLVideoElement>(null);
+  const [, setLocalStream] = useState<MediaStream | null>(null);
+  const dahlingRef = useRef<Peer.Instance | null>(null);
+
+  interface LiveViewerRefType {
+    callsendInitSignal: (incomingSignal: string) => void;
+  }
+  const liveViewerRef = useRef<LiveViewerRefType | null>(null);
 
   useEffect(() => {
-    const getStreamAndCreatePeer = async () => {
+    const setup = async () => {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: true,
-          audio: true,
-        });
-        setScreenStream(stream);
+        const sc = searchParams.get("sc");
+        const screenCode = sc ? sc : "1212121";
+        setScreen(screenCode);
 
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-          videoRef.current.play();
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        setLocalStream(stream);
+        if (localVideoRef.current) {
+          localVideoRef.current.srcObject = stream;
+          localVideoRef.current.play();
         }
 
-        const peer = new Peer({
+        const dahlingPeer = new Peer({
           initiator: true,
           stream: stream,
           trickle: false,
+          offerOptions: {
+            offerToReceiveVideo: false,
+            offerToReceiveAudio: false,
+          },
         });
 
-        peer.on("signal", (signalData) => {
-          const signalString = JSON.stringify(signalData);
-          console.log("Host created offer signal:", signalString);
-          setHostSignal(signalString);
+        dahlingRef.current = dahlingPeer;
 
-          sendSignal(screenCode, "LIVE_READY_DAHLING", signalString);
+        dahlingPeer.on("signal", async (data) => {
+          const initSignal = JSON.stringify(data);
+          console.log("Host offer signal:", initSignal);
+          await sendSignal(screenCode, "LIVE_READY_POPLAR", initSignal);
+          setIsLiveConnection(true);
         });
 
-        peer.on("connect", () => {
-          console.log("Host Peer connected");
-          peer.send("Hello from host");
+        dahlingPeer.on("connect", () => {
+          console.log("Host connected with peer!");
         });
 
-        peer.on("data", (data) => {
-          console.log("Host received data:", data.toString());
+        dahlingPeer.on("error", (err) => {
+          console.error("Peer error:", err);
         });
 
-        peer.on("error", (err) => {
-          console.error("Host Peer error:", err);
+        const channel = await events.connect(`/game/${screenCode}`, { authMode: "iam" });
+        setIsConnected(true);
+
+        const sub = channel.subscribe({
+          next: async (data) => {
+            console.log("Received event:", data.event.type);
+            if (data?.event?.type === "LIVE_READY_DAHLING") {
+              const incomingSignal = data?.event?.payload?.message;
+              console.log("Received viewer answer:", incomingSignal);
+              dahlingRef.current?.signal(incomingSignal);
+            }
+            if (data?.event?.type === "LIVE_READY_POPLAR") {
+              const incomingSignal = data?.event?.payload?.message;
+              console.log("Received another host offer:", incomingSignal);
+              if (liveViewerRef.current) {
+                liveViewerRef.current.callsendInitSignal(incomingSignal);
+              } else {
+                console.warn("ViewerRef not ready yet.");
+              }
+            }
+          },
+          error: async (err) => {
+            console.error("Subscription error:", err);
+          },
         });
 
-        peerRef.current = peer;
+        // Clean-up
+        return () => {
+          sub.unsubscribe();
+          dahlingPeer.destroy();
+        };
       } catch (err) {
-        console.error("Host getUserMedia error:", err);
+        console.error("Setup error:", err);
       }
     };
 
-    getStreamAndCreatePeer();
-
-    return () => {
-      peerRef.current?.destroy();
-      setScreenStream(null);
-    };
-  }, [screenCode]);
-
-  const sendInitSignal = (incomingSignal: string) => {
-    if (!peerRef.current) {
-      console.error("No peer instance to signal");
-      return;
-    }
-
-    try {
-      peerRef.current.signal(incomingSignal);
-      console.log("Host received viewer signal and connected");
-    } catch (err) {
-      console.error("Host signal error:", err);
-    }
-  };
+    setup();
+  }, []);
 
   const sendSignal = async (screenCode: string, eventType: string, message: string) => {
-    events.post(
-      `/game/${screenCode}`,
-      {
-        type: eventType,
-        payload: { message: message },
-      },
-      { authMode: "iam" }
-    );
+    console.log("Sending Signal:", screenCode, eventType, message);
+    try {
+      await events.post(
+        `/game/${screenCode}`,
+        { type: eventType, payload: { message } },
+        { authMode: "iam" }
+      );
+    } catch (err) {
+      console.error("Failed to send signal", err);
+    }
   };
 
   return (
-    <div className="items-start gap-3 md:gap-4 tv-gap">
-      <video
-        ref={videoRef}
-        autoPlay
-        playsInline
-        muted
-        style={{ width: "100%", height: "100vh", border: "1px solid #00c853" }}
-      ></video>
+    <div>
+      <video ref={localVideoRef} autoPlay muted playsInline style={{ width: "100%", height: "50vh", border: "1px solid green" }} />
+      
+      {/* <LiveStreamViewer screenCode={screen} ref={liveViewerRef} /> */}
+
+      <div>
+        <p>Screen Code: {screen}</p>
+        <p>Room Connected: {isConnected ? "Yes" : "No"}</p>
+        <p>Live Connection: {isLiveConnection ? "Yes" : "No"}</p>
+      </div>
     </div>
   );
-});
-LiveStreamHost.displayName = "LiveStreamHost";
-
-export default LiveStreamHost;
+}
