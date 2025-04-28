@@ -16,14 +16,48 @@ export default function Home() {
 
   const searchParams = useSearchParams();
   const localVideoRef = useRef<HTMLVideoElement>(null);
-  const [, setLocalStream] = useState<MediaStream | null>(null);
+  const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const dahlingRef = useRef<Peer.Instance | null>(null);
-  const [lastSentSignal, setLastSentSignal] = useState<string>("");
+  const [, setLastSentSignal] = useState<string>("");
 
   interface LiveViewerRefType {
     callsendInitSignal: (incomingSignal: string) => void;
   }
   const liveViewerRef = useRef<LiveViewerRefType | null>(null);
+
+  const createNewHostPeer = (stream: MediaStream) => {
+    if (dahlingRef.current) {
+      console.log("Destroying old Host Peer...");
+      dahlingRef.current.destroy();
+    }
+
+    const newPeer = new Peer({
+      initiator: true,
+      stream: stream,
+      trickle: false,
+      offerOptions: {
+        offerToReceiveVideo: false,
+        offerToReceiveAudio: false,
+      },
+    });
+
+    newPeer.on("signal", (data) => {
+      const initSignal = JSON.stringify(data);
+      console.log("New Signal from Host", initSignal);
+      setLastSentSignal(initSignal);
+      sendSignal(screen, "LIVE_READY_POPLAR", initSignal);
+    });
+
+    newPeer.on("error", (err) => {
+      console.error("Peer error", err);
+    });
+
+    newPeer.on("connect", () => {
+      console.log("Host CONNECTED to viewer");
+    });
+
+    dahlingRef.current = newPeer;
+  };
 
   useEffect(() => {
     const setup = async () => {
@@ -94,8 +128,8 @@ export default function Home() {
             }
             if (data?.event?.type === "POP_JOINED") {
               console.log("Receiver (Poplar) joined, re-sending my offer");
-              if (dahlingRef.current) {
-                dahlingRef.current.signal(JSON.parse(lastSentSignal));
+              if (localStream) {
+                createNewHostPeer(localStream);
               }
             }
           },
