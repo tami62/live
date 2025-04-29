@@ -149,7 +149,7 @@ export default function Home() {
     };
 
     setup();
-  }, [localStream]);
+  }, []);
 
   const sendSignal = async (
     screenCode: string,
