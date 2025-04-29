@@ -17,6 +17,7 @@ export default function Home() {
   const searchParams = useSearchParams();
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
+  const [isStreamStarted, setIsStreamStarted] = useState<boolean>(false);
   const dahlingRef = useRef<Peer.Instance | null>(null);
   const [, setLastSentSignal] = useState<string>("");
 
@@ -75,7 +76,6 @@ export default function Home() {
           localVideoRef.current.srcObject = stream;
           localVideoRef.current.play();
         }
-
         const dahlingPeer = new Peer({
           initiator: true,
           stream: stream,
@@ -85,7 +85,7 @@ export default function Home() {
             offerToReceiveAudio: false,
           },
         });
-
+        
         dahlingRef.current = dahlingPeer;
 
         dahlingPeer.on("signal", async (data) => {
@@ -113,11 +113,13 @@ export default function Home() {
           next: async (data) => {
             console.log("Received event:", data.event.type);
             if (data?.event?.type === "LIVE_READY_DAHLING") {
+              setIsStreamStarted(true);
               const incomingSignal = data?.event?.payload?.message;
               console.log("Received viewer answer:", incomingSignal);
               dahlingRef.current?.signal(incomingSignal);
             }
             if (data?.event?.type === "LIVE_READY_POPLAR") {
+              setIsStreamStarted(true);
               const incomingSignal = data?.event?.payload?.message;
               console.log("Received another host offer:", incomingSignal);
               if (liveViewerRef.current) {
@@ -149,7 +151,7 @@ export default function Home() {
     };
 
     setup();
-  }, []);
+  }, [isStreamStarted]);
 
   const sendSignal = async (
     screenCode: string,
