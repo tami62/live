@@ -140,8 +140,6 @@ export default function Home() {
    <video ref={localVideoRef} autoPlay muted playsInline />
    <LiveStreamViewer screenCode={screen} ref={liveViewerRef} />
 
-
-    <video ref={localVideoRef} autoPlay muted playsInline />
   <span>screen code:{screen}</span>
  <span>Room Connection:{isConnected}</span>
  <span>Live Connection:{isLiveConnection}</span>
