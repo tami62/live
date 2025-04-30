@@ -111,7 +111,7 @@ export default function Home() {
         console.error("Setup error:", err);
       }
     };
-
+    console.log("screen before setup",screen,screenCode,sc);
     setup(screen);
   }, []);
 
