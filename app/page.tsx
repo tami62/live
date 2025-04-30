@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useLayoutEffect } from "react";
+import { useState, useRef,  useEffect } from "react";
 import amplifyConfig from "../amplify_outputs.json";
 import { Amplify } from "aws-amplify";
 import { events } from "aws-amplify/api";
@@ -23,12 +23,13 @@ export default function Home() {
 
   interface LiveViewerRefType {
     callsendInitSignal: (incomingSignal: string) => void;
+    checkViewerStatus: ()=>void;
   }
   const liveViewerRef = useRef<LiveViewerRefType | null>(null);
 
   
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     const setup = async () => {
       try {
         const sc = searchParams.get("sc");
@@ -100,7 +101,10 @@ export default function Home() {
             console.error("Subscription error:", err);
           },
         });
-        
+        console.log("check viewer status isStreamStarted", isStreamStarted);
+        if (!isStreamStarted) {
+          liveViewerRef.current?.checkViewerStatus();
+        }
         // Clean-up
         return () => {
           sub.unsubscribe();
@@ -141,7 +145,7 @@ export default function Home() {
         style={{ width: "100%", height: "50vh", border: "1px solid green" }}
       />
 
-      <LiveStreamViewer screenCode={screen} ref={liveViewerRef} /> 
+      <LiveStreamViewer screenCode={screen} subscriptionStarted={isConnected} ref={liveViewerRef} /> 
 
       <div>
         <p>Screen Code: {screen}</p>

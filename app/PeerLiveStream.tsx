@@ -1,26 +1,32 @@
-import React, { useRef, useLayoutEffect, forwardRef,useImperativeHandle} from 'react';
+import React, { useRef, useEffect, forwardRef,useImperativeHandle, useState} from 'react';
 import Peer from 'simple-peer';
 import { events } from "aws-amplify/api";
 
 interface LiveStreamViewerProps {
   screenCode: string;
+  subscriptionStarted: boolean;
 }
 interface LiveViewerRefType {
   callsendInitSignal: (incomingSignal:string) => void;
+  checkViewerStatus: ()=>void;
 }
-const LiveStreamViewer = forwardRef<LiveViewerRefType, LiveStreamViewerProps>(({ screenCode }, ref) => {
+
+
+const LiveStreamViewer = forwardRef<LiveViewerRefType, LiveStreamViewerProps>(({ screenCode,subscriptionStarted }, ref, ) => {
   const videoRef = useRef<HTMLVideoElement>(null);
  
  
   const poplarRef = useRef<Peer.Instance | null>(null);
+  const [lastSignal, setLastSentSignal] = useState<string>("");
 
   useImperativeHandle(ref, () => ({
     callsendInitSignal: sendInitSignal,
+    checkViewerStatus: ()=>void;
   }));
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     console.log("screen code child",screenCode);
-    if (!screenCode && screenCode.length===0)return;
+    if (!screenCode && screenCode.length===0&&!subscriptionStarted)return;
     const popPeer = new Peer({ initiator: true,trickle: false, offerOptions: { 
       offerToReceiveVideo: true,
       offerToReceiveAudio: true,
@@ -30,6 +36,7 @@ const LiveStreamViewer = forwardRef<LiveViewerRefType, LiveStreamViewerProps>(({
       const initSignal = JSON.stringify(signal);
       console.log("Signal on start");
       sendSignal(screenCode,"LIVE_READY_DAHLING",initSignal);
+      setLastSentSignal(lastSignal);
      });
 
     popPeer.on('stream', (remoteStream) => {
@@ -68,6 +75,11 @@ const LiveStreamViewer = forwardRef<LiveViewerRefType, LiveStreamViewerProps>(({
     console.log("sendInitSignal back incoming");
     poplarRef?.current?.signal(incomingSignal);
     
+  };
+
+  const checkViewerStatus = () => {
+    console.log("sendInitSignal back incoming");
+    sendSignal(screenCode,"LIVE_READY_DAHLING",lastSignal);
   };
 
   const sendSignal = async (screenCode:string,eventType:string, message:string) => {
