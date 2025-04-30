@@ -13,7 +13,7 @@ Amplify.configure(amplifyConfig, { ssr: true });
 export default function Home() {
   const [isConnected, setIsConnected] = useState<boolean>(false);
   const [isLiveConnection, setIsLiveConnection] = useState<boolean>(false);
-  const [screen, setScreen] = useState<string|null>(null);
+  const [screen, setScreen] = useState<string>('');
 
   const searchParams = useSearchParams();
   const localVideoRef = useRef<HTMLVideoElement>(null);
