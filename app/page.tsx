@@ -30,12 +30,12 @@ export default function Home() {
   
 
   useEffect(() => {
-    const setup = async () => {
+    const sc = searchParams.get("sc");
+    console.log("sc:",sc);
+    const screenCode = sc ? sc : "1212121";
+    setScreen(screenCode);
+    const setup = async (screen:string) => {
       try {
-        const sc = searchParams.get("sc");
-        const screenCode = sc ? sc : "1212121";
-        setScreen(screenCode);
-
         const stream = await navigator.mediaDevices.getUserMedia({
           video: true,
           audio: true,
@@ -101,10 +101,7 @@ export default function Home() {
             console.error("Subscription error:", err);
           },
         });
-        console.log("check viewer status isStreamStarted", isStreamStarted);
-        if (!isStreamStarted) {
-          liveViewerRef.current?.checkViewerStatus();
-        }
+       
         // Clean-up
         return () => {
           sub.unsubscribe();
@@ -115,7 +112,7 @@ export default function Home() {
       }
     };
 
-    setup();
+    setup(screen);
   }, []);
 
   const sendSignal = async (
