@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, forwardRef,useImperativeHandle} from 'react';
+import React, { useRef, useLayoutEffect, forwardRef,useImperativeHandle} from 'react';
 import Peer from 'simple-peer';
 import { events } from "aws-amplify/api";
 
@@ -18,7 +18,7 @@ const LiveStreamViewer = forwardRef<LiveViewerRefType, LiveStreamViewerProps>(({
     callsendInitSignal: sendInitSignal,
   }));
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     console.log("screen code",screenCode);
     if (!screenCode) return;
     const popPeer = new Peer({ initiator: true,trickle: false, offerOptions: { 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useLayoutEffect } from "react";
 import amplifyConfig from "../amplify_outputs.json";
 import { Amplify } from "aws-amplify";
 import { events } from "aws-amplify/api";
@@ -28,7 +28,7 @@ export default function Home() {
 
   
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const setup = async () => {
       try {
         const sc = searchParams.get("sc");
@@ -141,7 +141,7 @@ export default function Home() {
         style={{ width: "100%", height: "50vh", border: "1px solid green" }}
       />
 
-      { <LiveStreamViewer screenCode={screen} ref={liveViewerRef} /> }
+      <LiveStreamViewer screenCode={screen} ref={liveViewerRef} /> 
 
       <div>
         <p>Screen Code: {screen}</p>
