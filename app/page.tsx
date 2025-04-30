@@ -112,7 +112,7 @@ export default function Home() {
       }
     };
     console.log("screen before setup",screen,screenCode,sc);
-    setup(screen);
+    setup(screenCode);
   }, []);
 
   const sendSignal = async (
