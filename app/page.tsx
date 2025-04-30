@@ -135,6 +135,13 @@ export default function Home() {
     }
   };
 
+  const checkStatus = () => {
+    console.log("check viewer status isStreamStarted", isStreamStarted);
+    if (!isStreamStarted) {
+      liveViewerRef.current?.checkViewerStatus();
+    }
+  }
+  
   return (
     <div>
       <video
@@ -146,6 +153,8 @@ export default function Home() {
       />
 
       <LiveStreamViewer screenCode={screen} subscriptionStarted={isConnected} ref={liveViewerRef} /> 
+
+      <button onClick={checkStatus}>checkStatus</button>
 
       <div>
         <p>Screen Code: {screen}</p>

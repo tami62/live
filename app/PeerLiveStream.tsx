@@ -78,7 +78,7 @@ const LiveStreamViewer = forwardRef<LiveViewerRefType, LiveStreamViewerProps>(({
   };
 
   const checkViewerStatus = () => {
-    console.log("sendInitSignal back incoming");
+    console.log("check viewer status");
     sendSignal(screenCode,"LIVE_READY_DAHLING",lastSignal);
   };
 
