@@ -21,7 +21,7 @@ const LiveStreamViewer = forwardRef<LiveViewerRefType, LiveStreamViewerProps>(({
 
   useImperativeHandle(ref, () => ({
     callsendInitSignal: sendInitSignal,
-    checkViewerStatus: ()=>void;
+    checkViewerStatus: checkViewerStatus,
   }));
 
   useEffect(() => {
