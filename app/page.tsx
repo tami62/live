@@ -70,8 +70,8 @@ export default function Home() {
         dahlingPeer.on("error", (err) => {
           console.error("Peer error:", err);
         });
-
-        const channel = await events.connect(`/game/${screenCode}`, {
+        console.log("Connecting for subsription:", screen);
+        const channel = await events.connect(`/game/${screen}`, {
           authMode: "iam",
         });
         setIsConnected(true);
@@ -100,7 +100,7 @@ export default function Home() {
             console.error("Subscription error:", err);
           },
         });
-
+        
         // Clean-up
         return () => {
           sub.unsubscribe();
@@ -112,7 +112,7 @@ export default function Home() {
     };
 
     setup();
-  }, [isStreamStarted]);
+  }, []);
 
   const sendSignal = async (
     screenCode: string,
@@ -147,6 +147,7 @@ export default function Home() {
         <p>Screen Code: {screen}</p>
         <p>Room Connected: {isConnected ? "Yes" : "No"}</p>
         <p>Live Connection: {isLiveConnection ? "Yes" : "No"}</p>
+        <p>Stream Started: {isStreamStarted ? "Yes" : "No"}</p>
       </div>
     </div>
   );
