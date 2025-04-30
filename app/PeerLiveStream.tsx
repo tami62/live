@@ -19,8 +19,8 @@ const LiveStreamViewer = forwardRef<LiveViewerRefType, LiveStreamViewerProps>(({
   }));
 
   useLayoutEffect(() => {
-    console.log("screen code",screenCode);
-    if (!screenCode) return;
+    console.log("screen code child",screenCode);
+    if (!screenCode && screenCode.length===0)return;
     const popPeer = new Peer({ initiator: true,trickle: false, offerOptions: { 
       offerToReceiveVideo: true,
       offerToReceiveAudio: true,
