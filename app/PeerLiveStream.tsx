@@ -28,7 +28,7 @@ const LiveStreamViewer = forwardRef<LiveViewerRefType, LiveStreamViewerProps>(({
     poplarRef.current = popPeer;
     popPeer.on('signal', (signal) => {
       const initSignal = JSON.stringify(signal);
-      console.log("Signal on start", initSignal);
+      console.log("Signal on start");
       sendSignal(screenCode,"LIVE_READY_DAHLING",initSignal);
      });
 
@@ -65,13 +65,13 @@ const LiveStreamViewer = forwardRef<LiveViewerRefType, LiveStreamViewerProps>(({
   }, [screenCode]);
 
   const sendInitSignal = (incomingSignal:string) => {
-    console.log("sendInitSignal back incoming",incomingSignal);
+    console.log("sendInitSignal back incoming");
     poplarRef?.current?.signal(incomingSignal);
     
   };
 
   const sendSignal = async (screenCode:string,eventType:string, message:string) => {
-    console.log("sendSignal",screenCode,eventType,message);
+    console.log("sendSignal",screenCode,eventType);
   
    await events.connect(`/game/${screen}`, {
       authMode: "iam",

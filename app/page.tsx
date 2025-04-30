@@ -82,13 +82,13 @@ export default function Home() {
             if (data?.event?.type === "LIVE_READY_DAHLING") {
               setIsStreamStarted(true);
               const incomingSignal = data?.event?.payload?.message;
-              console.log("Received viewer answer:", incomingSignal);
+              console.log("Received viewer answer:");
               dahlingRef.current?.signal(incomingSignal);
             }
             if (data?.event?.type === "LIVE_READY_POPLAR") {
               setIsStreamStarted(true);
               const incomingSignal = data?.event?.payload?.message;
-              console.log("Received another host offer:", incomingSignal);
+              console.log("Received another host offer:");
               if (liveViewerRef.current) {
                 liveViewerRef.current.callsendInitSignal(incomingSignal);
               } else {
