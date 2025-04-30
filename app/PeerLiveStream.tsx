@@ -36,7 +36,7 @@ const LiveStreamViewer = forwardRef<LiveViewerRefType, LiveStreamViewerProps>(({
       const initSignal = JSON.stringify(signal);
       console.log("Signal on start");
       sendSignal(screenCode,"LIVE_READY_DAHLING",initSignal);
-      setLastSentSignal(lastSignal);
+      setLastSentSignal(initSignal);
      });
 
     popPeer.on('stream', (remoteStream) => {
