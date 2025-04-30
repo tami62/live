@@ -34,7 +34,7 @@ export default function Home() {
     console.log("sc:",sc);
     const screenCode = sc ? sc : "1212121";
     setScreen(screenCode);
-    const setup = async (screen:string) => {
+    const setup = async (screenIn:string) => {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
           video: true,
@@ -71,8 +71,8 @@ export default function Home() {
         dahlingPeer.on("error", (err) => {
           console.error("Peer error:", err);
         });
-        console.log("Connecting for subsription:", screen);
-        const channel = await events.connect(`/game/${screen}`, {
+        console.log("Connecting for subsription:", screenIn,screen);
+        const channel = await events.connect(`/game/${screenIn}`, {
           authMode: "iam",
         });
         setIsConnected(true);
