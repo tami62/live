@@ -179,8 +179,9 @@ export default function Home() {
 
       <LiveStreamViewer screenCode={screen} subscriptionStarted={isConnected} ref={liveViewerRef} /> 
 
+      
       <button onClick={checkStatus}>checkStatus</button>
-      <button onClick={callParty}>Call Party Room</button>
+      
 
       <div>
         <p>Screen Code: {screen}</p>
@@ -189,6 +190,7 @@ export default function Home() {
         <p>Stream Started: {isStreamStarted ? "Yes" : "No"}</p>
         <p>Phone Connected: {callConnected ? "Yes" : "No"}</p>
       </div>
+      <button onClick={callParty}>Call Party Room</button>
     </div>
   );
 }
