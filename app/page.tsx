@@ -142,9 +142,9 @@ export default function Home() {
   };
 
   const acceptCall =(incomingSignal:string) => {
-    console.log(memiRef);
-    console.log(memiRef.current);
-    
+    console.log("memiref",memiRef);
+    console.log("memi ref current",memiRef.current);
+    console.log("memi ref incoming signal",incomingSignal);
     memiRef.current?.signal(incomingSignal);
 
     console.log("memi signaling complete");
@@ -162,7 +162,7 @@ export default function Home() {
         const initSignal = JSON.stringify(data);
         console.log("Host offer signal:", initSignal);
         setMemiInitSignal(initSignal);
-        await sendSignal(screen,"MAKE_CALL_POP", initSignal);
+        sendSignal(screen,"MAKE_CALL_POP", initSignal);
         setCallConnected(true);
       });
       memiRef.current.on('stream', stream => {
@@ -175,7 +175,7 @@ export default function Home() {
    }
    else  {
     console.log("Calling again")
-    await sendSignal(screen,"MAKE_CALL_POP", memiInitSignal);
+    sendSignal(screen,"MAKE_CALL_POP", memiInitSignal);
    }
   }
   
