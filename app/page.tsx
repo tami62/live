@@ -14,11 +14,13 @@ export default function Home() {
   const [isConnected, setIsConnected] = useState<boolean>(false);
   const [isLiveConnection, setIsLiveConnection] = useState<boolean>(false);
   const [screen, setScreen] = useState<string>('');
+  const [callConnected, setCallConnected] = useState<boolean>(false);
 
   const searchParams = useSearchParams();
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const [isStreamStarted, setIsStreamStarted] = useState<boolean>(false);
   const dahlingRef = useRef<Peer.Instance | null>(null);
+  const memiRef = useRef<Peer.Instance | null>(null);
   const [, setLastSentSignal] = useState<string>("");
 
   interface LiveViewerRefType {
@@ -96,6 +98,12 @@ export default function Home() {
                 console.warn("ViewerRef not ready yet.");
               }
             }
+            if (data?.event?.type === "ANSWER_CALL_MEMI") {
+              setCallConnected(true);
+              const incomingSignal = data?.event?.payload?.message;
+              console.log("Answer Call received from Phone");
+              memiRef.current?.signal(incomingSignal);
+            }
           },
           error: async (err) => {
             console.error("Subscription error:", err);
@@ -132,6 +140,26 @@ export default function Home() {
     }
   };
 
+  const callParty = () => {
+   console.log(Screen);
+    const memiPeer= new Peer({ initiator: true,trickle: false, offerOptions: { 
+          offerToReceiveAudio: true,
+      } });
+      memiPeer.on("signal", async (data) => {
+        const initSignal = JSON.stringify(data);
+        console.log("Host offer signal:", initSignal);
+        setLastSentSignal(initSignal);
+        await sendSignal(screen,"MAKE_CALL_POP", initSignal);
+        setCallConnected(true);
+      });
+      memiPeer.on('stream', stream => {
+        const audio = new Audio();
+        audio.srcObject = stream;
+        audio.play();
+      });
+      memiRef.current = memiPeer;
+
+  }
   const checkStatus = () => {
     console.log("check viewer status isStreamStarted", isStreamStarted);
     if (!isStreamStarted) {
@@ -152,12 +180,14 @@ export default function Home() {
       <LiveStreamViewer screenCode={screen} subscriptionStarted={isConnected} ref={liveViewerRef} /> 
 
       <button onClick={checkStatus}>checkStatus</button>
+      <button onClick={callParty}>Call Party Room</button>
 
       <div>
         <p>Screen Code: {screen}</p>
         <p>Room Connected: {isConnected ? "Yes" : "No"}</p>
         <p>Live Connection: {isLiveConnection ? "Yes" : "No"}</p>
         <p>Stream Started: {isStreamStarted ? "Yes" : "No"}</p>
+        <p>Phone Connected: {callConnected ? "Yes" : "No"}</p>
       </div>
     </div>
   );
