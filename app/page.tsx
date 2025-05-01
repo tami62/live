@@ -15,6 +15,7 @@ export default function Home() {
   const [isLiveConnection, setIsLiveConnection] = useState<boolean>(false);
   const [screen, setScreen] = useState<string>('');
   const [callConnected, setCallConnected] = useState<boolean>(false);
+  const [waitingForConnection, setWaitingForConnection] = useState<boolean>(false);
 
   const searchParams = useSearchParams();
   const localVideoRef = useRef<HTMLVideoElement>(null);
@@ -153,7 +154,9 @@ export default function Home() {
     const memiPeer= new Peer({ initiator: true,trickle: false, offerOptions: { 
           offerToReceiveAudio: true,
       } });
+      console.log("memi ref before peer connection",memiRef?.current);
       memiRef.current = memiPeer;
+      setWaitingForConnection(true); // trigger a state change so referene is updated.
       memiPeer.on("signal", async (data) => {
         const initSignal = JSON.stringify(data);
         console.log("Host offer signal:", initSignal);
@@ -196,7 +199,9 @@ export default function Home() {
         <p>Room Connected: {isConnected ? "Yes" : "No"}</p>
         <p>Live Connection: {isLiveConnection ? "Yes" : "No"}</p>
         <p>Stream Started: {isStreamStarted ? "Yes" : "No"}</p>
+        <p>waiting for connection: {waitingForConnection ? "Yes" : "No"}</p>
         <p>Phone Connected: {callConnected ? "Yes" : "No"}</p>
+        
       </div>
       <button onClick={callParty}>Call Party Room</button>
     </div>
