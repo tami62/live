@@ -23,7 +23,7 @@ export default function Home() {
   const dahlingRef = useRef<Peer.Instance | null>(null);
    const memiRef = useRef<Peer.Instance | null>(null);
   const [, setLastSentSignal] = useState<string>("");
-
+  const [memiInitSignal, setMemiInitSignal] = useState<string>("");
   interface LiveViewerRefType {
     callsendInitSignal: (incomingSignal: string) => void;
     checkViewerStatus: ()=>void;
@@ -149,28 +149,35 @@ export default function Home() {
 
     console.log("memi signaling complete");
   }
-  const callParty = () => {
+  const callParty = async () => {
    console.log("call party screen:", screen);
+   if (memiRef.current===null) {
     const memiPeer= new Peer({ initiator: true,trickle: false, offerOptions: { 
           offerToReceiveAudio: true,
       } });
       console.log("memi ref before peer connection",memiRef?.current);
       memiRef.current = memiPeer;
       setWaitingForConnection(true); // trigger a state change so referene is updated.
-      memiPeer.on("signal", async (data) => {
+      memiRef.current.on("signal", async (data) => {
         const initSignal = JSON.stringify(data);
         console.log("Host offer signal:", initSignal);
-        setLastSentSignal(initSignal);
+        setMemiInitSignal(initSignal);
         await sendSignal(screen,"MAKE_CALL_POP", initSignal);
         setCallConnected(true);
       });
-      memiPeer.on('stream', stream => {
+      memiRef.current.on('stream', stream => {
         console.log("inside call stream:");
         const audio = new Audio();
         audio.srcObject = stream;
         audio.play();
       });
-    }
+      
+   }
+   else  {
+    await sendSignal(screen,"MAKE_CALL_POP", memiInitSignal);
+   }
+  }
+  
   const checkStatus = () => {
     console.log("check viewer status isStreamStarted", isStreamStarted);
     if (!isStreamStarted) {
