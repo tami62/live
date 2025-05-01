@@ -110,7 +110,7 @@ export default function Home() {
             console.error("Subscription error:", err);
           },
         });
-       
+        callParty();
         // Clean-up
         return () => {
           sub.unsubscribe();
@@ -174,6 +174,7 @@ export default function Home() {
       
    }
    else  {
+    console.log("Calling again")
     await sendSignal(screen,"MAKE_CALL_POP", memiInitSignal);
    }
   }
