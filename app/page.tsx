@@ -20,7 +20,7 @@ export default function Home() {
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const [isStreamStarted, setIsStreamStarted] = useState<boolean>(false);
   const dahlingRef = useRef<Peer.Instance | null>(null);
-  const memiRef = useRef<Peer.Instance | null>(null);
+   const memiRef = useRef<Peer.Instance | null>(null);
   const [, setLastSentSignal] = useState<string>("");
 
   interface LiveViewerRefType {
@@ -102,7 +102,7 @@ export default function Home() {
               setCallConnected(true);
               const incomingSignal = data?.event?.payload?.message;
               console.log("Answer Call received from Phone");
-              memiRef.current?.signal(incomingSignal);
+              acceptCall(incomingSignal);
             }
           },
           error: async (err) => {
@@ -140,11 +140,20 @@ export default function Home() {
     }
   };
 
+  const acceptCall =(incomingSignal:string) => {
+    console.log(memiRef);
+    console.log(memiRef.current);
+    
+    memiRef.current?.signal(incomingSignal);
+
+    console.log("memi signaling complete");
+  }
   const callParty = () => {
-   console.log(Screen);
+   console.log("call party screen:", screen);
     const memiPeer= new Peer({ initiator: true,trickle: false, offerOptions: { 
           offerToReceiveAudio: true,
       } });
+      memiRef.current = memiPeer;
       memiPeer.on("signal", async (data) => {
         const initSignal = JSON.stringify(data);
         console.log("Host offer signal:", initSignal);
@@ -153,13 +162,12 @@ export default function Home() {
         setCallConnected(true);
       });
       memiPeer.on('stream', stream => {
+        console.log("inside call stream:");
         const audio = new Audio();
         audio.srcObject = stream;
         audio.play();
       });
-      memiRef.current = memiPeer;
-
-  }
+    }
   const checkStatus = () => {
     console.log("check viewer status isStreamStarted", isStreamStarted);
     if (!isStreamStarted) {
