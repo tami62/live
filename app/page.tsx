@@ -1,217 +1,34 @@
-"use client";
+"use client"
 
-import { useState, useRef,  useEffect } from "react";
-import amplifyConfig from "../amplify_outputs.json";
-import { Amplify } from "aws-amplify";
-import { events } from "aws-amplify/api";
-import Peer from "simple-peer";
-import { useSearchParams } from "next/navigation";
-import LiveStreamViewer  from "./PeerLiveStream";
-Amplify.configure(amplifyConfig, { ssr: true });
+import { useState, useEffect } from "react" 
+import { Amplify } from "aws-amplify"
+import amplifyConfig from "../amplify_outputs.json"
+import StreamerDashboard from "./components/streamer-dashboard"
 
+Amplify.configure(amplifyConfig, { ssr: true })
 
 export default function Home() {
-  const [isConnected, setIsConnected] = useState<boolean>(false);
-  const [isLiveConnection, setIsLiveConnection] = useState<boolean>(false);
-  const [screen, setScreen] = useState<string>('');
-  const [callConnected, setCallConnected] = useState<boolean>(false);
-  const [waitingForConnection, setWaitingForConnection] = useState<boolean>(false);
-
-  const searchParams = useSearchParams();
-  const localVideoRef = useRef<HTMLVideoElement>(null);
-  const [isStreamStarted, setIsStreamStarted] = useState<boolean>(false);
-  const dahlingRef = useRef<Peer.Instance | null>(null);
-   const memiRef = useRef<Peer.Instance | null>(null);
-  const [, setLastSentSignal] = useState<string>("");
-  const [memiInitSignal, setMemiInitSignal] = useState<string>("");
-  interface LiveViewerRefType {
-    callsendInitSignal: (incomingSignal: string) => void;
-    checkViewerStatus: ()=>void;
-  }
-  const liveViewerRef = useRef<LiveViewerRefType | null>(null);
-
-  
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    const sc = searchParams.get("sc");
-    console.log("sc:",sc);
-    const screenCode = sc ? sc : "1212121";
-    setScreen(screenCode);
-    const setup = async (screenIn:string) => {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: true,
-          audio: true,
-        });
-        if (localVideoRef.current) {
-          localVideoRef.current.srcObject = stream;
-          localVideoRef.current.play();
-        }
-        const dahlingPeer = new Peer({
-          initiator: false,
-          stream: stream,
-          trickle: false,
-          offerOptions: {
-            offerToReceiveVideo: false,
-            offerToReceiveAudio: false,
-          },
-        });
-        
-        dahlingRef.current = dahlingPeer;
+    // Simulate loading time for Amplify configuration
+    const timer = setTimeout(() => {
+      setIsLoading(false)
+    }, 1000)
 
-        dahlingPeer.on("signal", async (data) => {
-          const initSignal = JSON.stringify(data);
-          console.log("Host offer signal:", initSignal);
-          setLastSentSignal(initSignal);
-          await sendSignal(screenCode, "LIVE_READY_POPLAR", initSignal);
-          setIsLiveConnection(true);
-        });
+    return () => clearTimeout(timer)
+  }, [])
 
-        dahlingPeer.on("connect", () => {
-          console.log("Host connected with peer!");
-        });
-
-        dahlingPeer.on("error", (err) => {
-          console.error("Peer error:", err);
-        });
-        console.log("Connecting for subsription:", screenIn,screen);
-        const channel = await events.connect(`/game/${screenIn}`, {
-          authMode: "iam",
-        });
-        setIsConnected(true);
-
-        const sub = channel.subscribe({
-          next: async (data) => {
-            console.log("Received event:", data.event.type);
-            if (data?.event?.type === "LIVE_READY_DAHLING") {
-              setIsStreamStarted(true);
-              const incomingSignal = data?.event?.payload?.message;
-              console.log("Received viewer answer:");
-              dahlingRef.current?.signal(incomingSignal);
-            }
-            if (data?.event?.type === "LIVE_READY_POPLAR") {
-              setIsStreamStarted(true);
-              const incomingSignal = data?.event?.payload?.message;
-              console.log("Received another host offer:");
-              if (liveViewerRef.current) {
-                liveViewerRef.current.callsendInitSignal(incomingSignal);
-              } else {
-                console.warn("ViewerRef not ready yet.");
-              }
-            }
-            if (data?.event?.type === "ANSWER_CALL_MEMI") {
-              setCallConnected(true);
-              const incomingSignal = data?.event?.payload?.message;
-              console.log("Answer Call received from Phone");
-              acceptCall(incomingSignal);
-            }
-          },
-          error: async (err) => {
-            console.error("Subscription error:", err);
-          },
-        });
-        callParty();
-        // Clean-up
-        return () => {
-          sub.unsubscribe();
-          dahlingPeer.destroy();
-        };
-      } catch (err) {
-        console.error("Setup error:", err);
-      }
-    };
-    console.log("screen before setup",screen,screenCode,sc);
-    setup(screenCode);
-  }, []);
-
-  const sendSignal = async (
-    screenCode: string,
-    eventType: string,
-    message: string
-  ) => {
-    console.log("Sending Signal:", screenCode, eventType, message);
-    try {
-      await events.post(
-        `/game/${screenCode}`,
-        { type: eventType, payload: { message } },
-        { authMode: "iam" }
-      );
-    } catch (err) {
-      console.error("Failed to send signal", err);
-    }
-  };
-
-  const acceptCall =(incomingSignal:string) => {
-    console.log("memiref",memiRef);
-    console.log("memi ref current",memiRef.current);
-    console.log("memi ref incoming signal",incomingSignal);
-    memiRef.current?.signal(incomingSignal);
-
-    console.log("memi signaling complete");
-  }
-  const callParty = async () => {
-   console.log("call party screen:", screen);
-   if (memiRef.current===null) {
-    const memiPeer= new Peer({ initiator: true,trickle: false, offerOptions: { 
-          offerToReceiveAudio: true,
-      } });
-      console.log("memi ref before peer connection",memiRef?.current);
-      memiRef.current = memiPeer;
-      setWaitingForConnection(true); // trigger a state change so referene is updated.
-      memiRef.current.on("signal", async (data) => {
-        const initSignal = JSON.stringify(data);
-        console.log("Host offer signal:", initSignal);
-        setMemiInitSignal(initSignal);
-        sendSignal(screen,"MAKE_CALL_POP", initSignal);
-        setCallConnected(true);
-      });
-      memiRef.current.on('stream', stream => {
-        console.log("inside call stream:");
-        const audio = new Audio();
-        audio.srcObject = stream;
-        audio.play();
-      });
-      
-   }
-   else  {
-    console.log("Calling again")
-    sendSignal(screen,"MAKE_CALL_POP", memiInitSignal);
-   }
-  }
-  
-  const checkStatus = () => {
-    console.log("check viewer status isStreamStarted", isStreamStarted);
-    if (!isStreamStarted) {
-      liveViewerRef.current?.checkViewerStatus();
-    }
-  }
-  
-  return (
-    <div>
-      <video
-        ref={localVideoRef}
-        autoPlay
-        muted
-        playsInline
-        style={{ width: "100%", height: "50vh", border: "1px solid green" }}
-      />
-
-      <LiveStreamViewer screenCode={screen} subscriptionStarted={isConnected} ref={liveViewerRef} /> 
-
-      
-      <button onClick={checkStatus}>checkStatus</button>
-      
-
-      <div>
-        <p>Screen Code: {screen}</p>
-        <p>Room Connected: {isConnected ? "Yes" : "No"}</p>
-        <p>Live Connection: {isLiveConnection ? "Yes" : "No"}</p>
-        <p>Stream Started: {isStreamStarted ? "Yes" : "No"}</p>
-        <p>waiting for connection: {waitingForConnection ? "Yes" : "No"}</p>
-        <p>Phone Connected: {callConnected ? "Yes" : "No"}</p>
-        
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-900">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-t-purple-600 border-purple-200 rounded-full animate-spin mx-auto mb-4"></div>
+          <h2 className="text-xl font-semibold text-white">Initializing Stream...</h2>
+        </div>
       </div>
-      <button onClick={callParty}>Call Party Room</button>
-    </div>
-  );
+    )
+  }
+
+  return <StreamerDashboard />
 }
