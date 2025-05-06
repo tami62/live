@@ -2,7 +2,11 @@
 
 import { Suspense } from "react"
 import ViewerPage from "../components/viewer-page"
- 
+import { Amplify } from "aws-amplify"
+import amplifyConfig from "./../../amplify_outputs.json"
+
+Amplify.configure(amplifyConfig, { ssr: true })
+
 export default function Page() {
   return (
     <Suspense

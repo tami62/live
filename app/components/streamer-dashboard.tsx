@@ -53,7 +53,7 @@ export default function StreamerDashboard() {
         setLocalStream(stream);
 
         // Connect to Amplify events
-        const channel = await events.connect(`/stream/${streamId}`, {
+        const channel = await events.connect(`/game/${streamId}`, {
           authMode: "iam",
         });
 
@@ -217,7 +217,7 @@ export default function StreamerDashboard() {
   ) => {
     try {
       await events.post(
-        `/stream/${screenCode}`,
+        `/game/${screenCode}`,
         { type: eventType, payload },
         { authMode: "iam" }
       );

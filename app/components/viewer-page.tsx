@@ -30,7 +30,7 @@ export default function ViewerPage() {
 
     const subscribeToEvents = async () => {
       try {
-        const channel = await events.connect(`/stream/${screenCode}`, {
+        const channel = await events.connect(`/game/${screenCode}`, {
           authMode: "iam",
         });
 
@@ -164,7 +164,7 @@ export default function ViewerPage() {
   ) => {
     try {
       await events.post(
-        `/stream/${screenCode}`,
+        `/game/${screenCode}`,
         { type: eventType, payload },
         { authMode: "iam" }
       );
