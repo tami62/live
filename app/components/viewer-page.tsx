@@ -3,15 +3,27 @@
 import { useState, useRef, useEffect } from "react";
 import { events } from "aws-amplify/api";
 import Peer from "simple-peer";
-import { AlertCircle, Video } from "lucide-react";
-import { Alert, AlertDescription } from "./ui/alert";
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
+import { Card, CardContent } from "./ui/card";
+import { Alert, AlertDescription } from "./ui/alert";
+import { AlertCircle, ArrowLeft, Video, User } from "lucide-react";
+import { getStreamByStreamId } from "@/app/actions/streams";
 
-export default function ViewerPage() {
+interface ViewerPageProps {
+  streamId: string;
+  streamTitle: string;
+  streamerName: string;
+  onBack: () => void;
+}
+
+export default function ViewerPage({
+  streamId,
+  streamTitle,
+  streamerName,
+  onBack,
+}: ViewerPageProps) {
   const [name, setName] = useState<string>("");
-  const [screenCode, setScreenCode] = useState<string>("");
   const [viewerId] = useState<string>(
     `viewer-${Math.random().toString(36).substring(2, 9)}`
   );
@@ -20,17 +32,20 @@ export default function ViewerPage() {
   >("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSubscribed, setIsSubscribed] = useState<boolean>(false);
+  const [streamActive, setStreamActive] = useState<boolean>(true);
+  const [checkingInterval, setCheckingInterval] =
+    useState<NodeJS.Timeout | null>(null);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const peerRef = useRef<Peer.Instance | null>(null);
 
-  // Subscribe to events when screen code is entered
+  // Subscribe to events for this stream
   useEffect(() => {
-    if (!screenCode || isSubscribed) return;
+    if (isSubscribed) return;
 
     const subscribeToEvents = async () => {
       try {
-        const channel = await events.connect(`/game/${screenCode}`, {
+        const channel = await events.connect(`/stream/${streamId}`, {
           authMode: "iam",
         });
 
@@ -45,26 +60,61 @@ export default function ViewerPage() {
 
         setIsSubscribed(true);
 
+        // Check if the stream is still active periodically
+        const interval = setInterval(async () => {
+          try {
+            const stream = await getStreamByStreamId(streamId);
+            if (!stream || !stream.isActive) {
+              setStreamActive(false);
+              if (status === "connected") {
+                disconnect();
+                setErrorMessage("The stream has ended.");
+              }
+            }
+          } catch (error) {
+            console.error("Error checking stream status:", error);
+          }
+        }, 30000); // Check every 30 seconds
+
+        setCheckingInterval(interval);
+
         return () => {
           subscription.unsubscribe();
           if (peerRef.current) {
             peerRef.current.destroy();
           }
+          if (checkingInterval) {
+            clearInterval(checkingInterval);
+          }
         };
       } catch (err) {
         console.error("Subscription error:", err);
         setStatus("error");
-        setErrorMessage(
-          "Failed to connect to stream. Please check the screen code."
-        );
+        setErrorMessage("Failed to connect to stream. Please try again.");
       }
     };
 
     subscribeToEvents();
-  }, [screenCode, isSubscribed]);
+
+    // Initial check for stream status
+    checkStreamStatus();
+  }, [streamId, isSubscribed]);
+
+  // Check if stream is active
+  const checkStreamStatus = async () => {
+    try {
+      const stream = await getStreamByStreamId(streamId);
+      if (!stream || !stream.isActive) {
+        setStreamActive(false);
+        setErrorMessage("This stream is no longer active.");
+      }
+    } catch (error) {
+      console.error("Error checking stream status:", error);
+    }
+  };
 
   // Handle incoming events
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleIncomingEvent = (data: any) => {
     const eventType = data?.event?.type;
     const payload = data?.event?.payload;
@@ -96,8 +146,13 @@ export default function ViewerPage() {
 
   // Request to join stream
   const requestStream = async () => {
-    if (!name || !screenCode) {
-      setErrorMessage("Please enter your name and screen code.");
+    if (!name) {
+      setErrorMessage("Please enter your name to join the stream.");
+      return;
+    }
+
+    if (!streamActive) {
+      setErrorMessage("This stream is no longer active.");
       return;
     }
 
@@ -115,10 +170,10 @@ export default function ViewerPage() {
 
       // Handle peer signals
       peer.on("signal", (signal) => {
-        sendSignal(screenCode, "VIEWER_REQUEST", {
+        sendSignal(streamId, "VIEWER_REQUEST", {
           id: viewerId,
           name,
-          screenCode,
+          screenCode: streamId,
           signal: JSON.stringify(signal),
         });
       });
@@ -164,7 +219,7 @@ export default function ViewerPage() {
   ) => {
     try {
       await events.post(
-        `/game/${screenCode}`,
+        `/stream/${screenCode}`,
         { type: eventType, payload },
         { authMode: "iam" }
       );
@@ -191,14 +246,34 @@ export default function ViewerPage() {
   return (
     <div className="min-h-screen bg-gray-900 text-white p-4">
       <div className="max-w-4xl mx-auto space-y-6">
-        <header className="text-center mb-6">
-          <h1 className="text-2xl font-bold">Stream Viewer</h1>
+        <header className="flex items-center mb-6">
+          <Button variant="ghost" onClick={onBack} className="mr-4">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Streams
+          </Button>
+          <div>
+            <h1 className="text-2xl font-bold">{streamTitle}</h1>
+            <div className="flex items-center text-gray-400 mt-1">
+              <User className="h-4 w-4 mr-1" />
+              {streamerName}
+            </div>
+          </div>
         </header>
 
         {errorMessage && (
           <Alert variant="destructive" className="mb-6">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>{errorMessage}</AlertDescription>
+          </Alert>
+        )}
+
+        {!streamActive && status !== "connected" && (
+          <Alert className="mb-6 border-yellow-600 bg-yellow-950">
+            <AlertCircle className="h-4 w-4 text-yellow-500" />
+            <AlertDescription className="text-yellow-300">
+              This stream is no longer active. Please go back to browse other
+              streams.
+            </AlertDescription>
           </Alert>
         )}
 
@@ -234,10 +309,7 @@ export default function ViewerPage() {
           </div>
         ) : (
           <Card className="bg-gray-800 border-gray-700">
-            <CardHeader>
-              <CardTitle className="text-center">Join Stream</CardTitle>
-            </CardHeader>
-            <CardContent>
+            <CardContent className="p-6">
               <div className="space-y-4">
                 <div>
                   <label
@@ -252,31 +324,14 @@ export default function ViewerPage() {
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Enter your name"
                     className="bg-gray-700 border-gray-600"
-                    disabled={status === "requesting"}
-                  />
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="screenCode"
-                    className="block text-sm font-medium mb-1"
-                  >
-                    Screen Code
-                  </label>
-                  <Input
-                    id="screenCode"
-                    value={screenCode}
-                    onChange={(e) => setScreenCode(e.target.value)}
-                    placeholder="Enter screen code"
-                    className="bg-gray-700 border-gray-600"
-                    disabled={status === "requesting"}
+                    disabled={status === "requesting" || !streamActive}
                   />
                 </div>
 
                 <Button
                   className="w-full bg-purple-600 hover:bg-purple-700"
                   onClick={requestStream}
-                  disabled={status === "requesting"}
+                  disabled={status === "requesting" || !streamActive}
                 >
                   {status === "requesting" ? (
                     <>
