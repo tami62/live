@@ -1,7 +1,7 @@
 {
   "auth": {
     "user_pool_id": "us-east-1_w7EPkx5Al",
-    "aws_region": "us-east-1",
+    "region": "us-east-1",
     "user_pool_client_id": "5gnovd4ariuujms3b00lso8dqe",
     "identity_pool_id": "us-east-1:345335c6-640c-4be9-a78a-f38e49ed7a5e",
     "mfa_methods": [],
@@ -33,10 +33,10 @@
   },
   "data": {
     "url": "https://34nmhpfhynew7ez6tcl6pxvoly.appsync-api.us-east-1.amazonaws.com/graphql",
-    "aws_region": "us-east-1",
+    "region": "us-east-1",
     "default_authorization_type": "AMAZON_COGNITO_USER_POOLS",
     "authorization_types": [
-      "AWS_IAM"
+      "IAM"
     ],
     "model_introspection": {
       "version": 1,
@@ -996,13 +996,13 @@
     }
   },
   "storage": {
-    "aws_region": "us-east-1",
+    "region": "us-east-1",
     "bucket_name": "amplify-d10k6xjfs4pyz1-ma-partyhomediasbucket2ee19-1xrsonkttxey",
     "buckets": [
       {
         "name": "partyho-medias",
         "bucket_name": "amplify-d10k6xjfs4pyz1-ma-partyhomediasbucket2ee19-1xrsonkttxey",
-        "aws_region": "us-east-1",
+        "region": "us-east-1",
         "paths": {
           "public/*": {
             "guest": [
@@ -1104,8 +1104,8 @@
     "stripeWebhookHandler": "https://g3dkc7iutfm2rawdcaviid3ufi0xpvxq.lambda-url.us-east-1.on.aws/",
     "events": {
       "url": "https://spnuhrrbdbdqpdjz5bjikck5ku.appsync-api.us-east-1.amazonaws.com/event",
-      "aws_region": "us-east-1",
-      "default_authorization_type": "AWS_IAM"
+      "region": "us-east-1",
+      "default_authorization_type": "IAM"
     }
   }
 }
