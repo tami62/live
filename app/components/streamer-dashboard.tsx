@@ -357,8 +357,8 @@ export default function StreamerDashboard() {
       <div className="max-w-6xl mx-auto space-y-6">
         <header className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-2xl font-bold">{streamInfo?.title || "Live Stream Dashboard"}</h1>
-            <p className="text-gray-400">Stream ID: {streamId}</p>
+            <h1 className="text-2xl font-bold">{streamInfo?.title || "Dumbwood PartyHo Performer"}</h1>
+            <p className="text-gray-400">Dahling ID: {streamId}</p>
           </div>
           <StreamControls isStreaming={isStreaming} onToggleStream={toggleStreaming} isConnected={isConnected} />
         </header>
@@ -385,7 +385,7 @@ export default function StreamerDashboard() {
             <Tabs defaultValue="requests">
               <TabsList className="w-full bg-gray-800">
                 <TabsTrigger value="requests" className="flex-1">
-                  Viewer Requests {viewerRequests.length > 0 && `(${viewerRequests.length})`}
+                  Party Requests {viewerRequests.length > 0 && `(${viewerRequests.length})`}
                 </TabsTrigger>
                 <TabsTrigger value="connected" className="flex-1">
                   Connected {connectedUsers.length > 0 && `(${connectedUsers.length})`}

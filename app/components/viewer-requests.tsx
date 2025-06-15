@@ -24,7 +24,7 @@ export default function ViewerRequests({ requests, onAccept, onReject }: ViewerR
           <CardContent className="p-6 text-center text-gray-400">
             <div className="flex flex-col items-center justify-center py-6">
               <User className="h-12 w-12 mb-4 text-gray-500" />
-              <p>No viewer requests</p>
+              <p>No Party requests</p>
               <p className="text-sm mt-1">Waiting for viewers to connect</p>
             </div>
           </CardContent>

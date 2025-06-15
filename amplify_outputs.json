@@ -1,9 +1,9 @@
 {
   "auth": {
-    "user_pool_id": "us-east-1_w7EPkx5Al",
-    "region": "us-east-1",
-    "user_pool_client_id": "5gnovd4ariuujms3b00lso8dqe",
-    "identity_pool_id": "us-east-1:345335c6-640c-4be9-a78a-f38e49ed7a5e",
+    "user_pool_id": "us-east-1_OdpxS8TZs",
+    "aws_region": "us-east-1",
+    "user_pool_client_id": "4mk5u9fohb3f3gatiegjn5elat",
+    "identity_pool_id": "us-east-1:9524e6d7-6ca3-4106-8a8f-61ebec799a45",
     "mfa_methods": [],
     "standard_required_attributes": [
       "email"
@@ -32,11 +32,11 @@
     "unauthenticated_identities_enabled": true
   },
   "data": {
-    "url": "https://34nmhpfhynew7ez6tcl6pxvoly.appsync-api.us-east-1.amazonaws.com/graphql",
-    "region": "us-east-1",
+    "url": "https://7egyvfzyufeclds3o7fxlkkfae.appsync-api.us-east-1.amazonaws.com/graphql",
+    "aws_region": "us-east-1",
     "default_authorization_type": "AMAZON_COGNITO_USER_POOLS",
     "authorization_types": [
-      "IAM"
+      "AWS_IAM"
     ],
     "model_introspection": {
       "version": 1,
@@ -996,13 +996,13 @@
     }
   },
   "storage": {
-    "region": "us-east-1",
-    "bucket_name": "amplify-d10k6xjfs4pyz1-ma-partyhomediasbucket2ee19-1xrsonkttxey",
+    "aws_region": "us-east-1",
+    "bucket_name": "amplify-d10k6xjfs4pyz1-ma-partyhomediasbucket2ee19-79gipbbkotak",
     "buckets": [
       {
         "name": "partyho-medias",
-        "bucket_name": "amplify-d10k6xjfs4pyz1-ma-partyhomediasbucket2ee19-1xrsonkttxey",
-        "region": "us-east-1",
+        "bucket_name": "amplify-d10k6xjfs4pyz1-ma-partyhomediasbucket2ee19-79gipbbkotak",
+        "aws_region": "us-east-1",
         "paths": {
           "public/*": {
             "guest": [
@@ -1101,11 +1101,11 @@
   },
   "version": "1.3",
   "custom": {
-    "stripeWebhookHandler": "https://g3dkc7iutfm2rawdcaviid3ufi0xpvxq.lambda-url.us-east-1.on.aws/",
-    "events": {
-      "url": "https://spnuhrrbdbdqpdjz5bjikck5ku.appsync-api.us-east-1.amazonaws.com/event",
-      "region": "us-east-1",
-      "default_authorization_type": "IAM"
+   "events": {
+      "url": "https://d5xb672c7zh2zpnm6wvp5x4xzi.appsync-api.us-east-1.amazonaws.com/event",
+      "api_key": "da2-e5h6qdklfbay3o35kwlf5kz6hi",
+      "aws_region": "us-east-1",
+      "default_authorization_type": "API_KEY"
     }
   }
 }
